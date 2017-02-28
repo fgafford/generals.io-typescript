@@ -2,6 +2,7 @@
 
 import * as io from "socket.io-client";
 import { TILE } from "./GameConstants";
+import { bot } from "./bots/bot"
 // import { GameSettings } from "../config/gameSettings";
 
 /*
@@ -14,8 +15,9 @@ import { TILE } from "./GameConstants";
 export class Game {
 
   private playerSettings: any;
+  private bot: bot;
 
-  private socket: SocketIOClient.Socket = io('http://botws.generals.io');
+  private socket: SocketIOClient.Socket;
 
   public playerIndex: number;
   public generals: Array<number>;
@@ -34,8 +36,10 @@ export class Game {
   // private botConfig;
 
   constructor(gameSettings: any, player: any){
-    // TODO: Load and save the bot here
-    gameSettings.botNamas
+    let botImpl = require(`./bots/${gameSettings.botName}`)['default'];  
+    this.bot = new botImpl();
+
+    this.socket = io('http://botws.generals.io');
 
     // setup listening handlers
     this.socket.on('connect', () => {
@@ -47,11 +51,11 @@ export class Game {
       console.log('Joined custom game at http://bot.generals.io/games/' + encodeURIComponent(gameSettings.gameName));
     });
     this.socket.on('game_start', this.game_start);
-    this.socket.on('update', this.update);
+    this.socket.on('game_update', this.update);
     this.socket.on('disconnect', this.disconnect);
   }
 
-  public up(tile: number) {
+  public up = (tile: number): {terrain: number; armies: number; index: number; } => {
     let row = Math.floor(tile / this.width);
     return {
       terrain: row === 1 ? TILE.MOUNTAIN : this.terrain[tile - this.width],
@@ -60,63 +64,35 @@ export class Game {
     };
   }
 
-  public left(tile: number) {
+  public left = (tile: number): {terrain: number; armies: number; index: number; } => {
     let col = tile % this.width;
     return {
       terrain: col === 1 ? TILE.MOUNTAIN : this.terrain[tile-1],
       armies: col === 1 ? TILE.MOUNTAIN : this.armies[tile-1],
-      index: tile-1
+      index: tile - 1
     };
   }
 
-  public right(tile: number) {
+  public right = (tile: number): {terrain: number; armies: number; index: number; } => {
     let col = tile % this.width;
     return {
       terrain: col === this.width ? TILE.MOUNTAIN : this.terrain[tile+1],
       armies: col === this.width ? TILE.MOUNTAIN : this.armies[tile+1],
-      index: tile+1
+      index: tile + 1
     };
   }
 
-  public down(tile: number) {
+  public down = (tile: number): {terrain: number; armies: number; index: number; } => {
     let row = Math.floor(tile / this.width);
     return {
       terrain: row > this.height ? TILE.MOUNTAIN : this.terrain[tile + this.width],
       armies: row > this.height ? TILE.MOUNTAIN : this.armies[tile + this.width],
-      index: tile+1
+      index: tile + this.width
     };
   }
 
-  /*
-   * Returns a new array created by patching the diff into the old array.
-   * The diff formatted with alternating matching and mismatching segments:
-   * <Number of matching elements>
-   * <Number of mismatching elements>
-   * <The mismatching elements>
-   * ... repeated until the end of diff.
-   * Example 1: patching a diff of [1, 1, 3] onto [0, 0] yields [0, 3].
-   * Example 2: patching a diff of [0, 1, 2, 1] onto [0, 0] yields [2, 0].
-   *
-   * From: http://dev.generals.io/api#tutorial
-   */
-  private patch(old: Array<number>, diff: Array<number>) {
-    var out: Array<number> = [];
-    var i = 0;
-    while (i < diff.length) {
-      if (diff[i]) {  // matching
-        Array.prototype.push.apply(out, old.slice(out.length, out.length + diff[i]));
-      }
-      i++;
-      if (i < diff.length && diff[i]) {  // mismatching
-        Array.prototype.push.apply(out, diff.slice(i + 1, i + 1 + diff[i]));
-        i += diff[i];
-      }
-      i++;
-    }
-    return out;
-  }
+   private update = (data: any): void => {
 
-  private update(data: any){
     this.turn = data.turn;
     // Patch the city and map diffs into our local variables.
     this.cities = this.patch(this.cities, data.cities_diff);
@@ -134,23 +110,60 @@ export class Game {
     // save the location of our base
     if(data.turn === 1){
       this.BASE = this.generals.filter( c => c > 0)[0];
+  console.log("BASE:", this.BASE);
       // The first two terms in |map| are the dimensions.
       this.width = this.map[0];
       this.height = this.map[1];
       this.size = this.width * this.height;
+      
     } else {
       // TODO: send to the bot here
+      let move = this.bot.update(this);
+      this.socket.emit('attack',move.from, move.to)
+
+      // log time elapse
+      console.log("Think time: ",move.elapse,"ms");
+      
     }
 
   }
 
+  /*
+   * Returns a new array created by patching the diff into the old array.
+   * The diff formatted with alternating matching and mismatching segments:
+   * <Number of matching elements>
+   * <Number of mismatching elements>
+   * <The mismatching elements>
+   * ... repeated until the end of diff.
+   * Example 1: patching a diff of [1, 1, 3] onto [0, 0] yields [0, 3].
+   * Example 2: patching a diff of [0, 1, 2, 1] onto [0, 0] yields [2, 0].
+   *
+   * From: http://dev.generals.io/api#tutorial
+   */
+  patch = (old: Array<number>, diff: Array<number>) : Array<number> => {
+    var out: Array<number> = [];
+    var i = 0;
+    while (i < diff.length) {
+      if (diff[i]) {  // matching
+        Array.prototype.push.apply(out, old.slice(out.length, out.length + diff[i]));
+      }
+      i++;
+      if (i < diff.length && diff[i]) {  // mismatching
+        Array.prototype.push.apply(out, diff.slice(i + 1, i + 1 + diff[i]));
+        i += diff[i];
+      }
+      i++;
+    }
+    return out;
+  }
+
   // Should really set the type here at some point
-  private game_start(data: any){
+  game_start(data: any){
     this.playerIndex = data.playerIndex;
     console.log('replay_url:','http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id));
   }
 
-  private disconnect(){
+  disconnect(){
     console.error('Disconnected from server.');
     process.exit(1);
   }

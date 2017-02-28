@@ -3,8 +3,15 @@ import { Move } from '../Move'
 import { Game } from '../Game'
 import { Attacks } from './Attacks';
 
-export class Recruit implements bot {
+export default class Recruit implements bot {
+
+  constructor(){}
+
   update(game: Game): Move {
-    return Attacks.infest(game, game.turn < 50);
+    let move = Attacks.infest(game, true);
+    console.log("move:", move);
+    
+    return move;
   }
+
 }
