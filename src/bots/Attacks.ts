@@ -32,7 +32,6 @@ export class Attacks {
    */
   static infest(game: Game, useBase: boolean, from = game.BASE, minArmies = 2) {
     let move = new Move(0,0, new Date().getTime());
-
     let readyToMove:Array<number> = [];
 
     for(let i = 0; i < game.terrain.length; i++){
@@ -43,75 +42,70 @@ export class Attacks {
         readyToMove.push(i);
       }
     }
-    // TODO: Find furtest from base...
 
-console.log(readyToMove);
+    let sorted = readyToMove.sort((a,b): number => {
+      // Push the base to the back (last option)
+      if(a === game.BASE) return 1;
+      if(b === game.BASE) return -1;
+      return game.armies[a] - game.armies[b];
+    });
 
+    //[Math.floor(Math.random()*readyToMove.length)] // random ready army
+    // TODO: get first army with a surrounding empty space...
+    for(var i in sorted){
+      let surroundings = Attacks.getSurroundings(sorted[i], game);  
 
-    let army = readyToMove[Math.floor(Math.random()*readyToMove.length)] // random ready army
-    let surroundings = Attacks.getSurroundings(army, game);
-// console.log('-------------');
-// console.log('army:', army);
-// console.log( surroundings);
-
-
-    // Prefer empty space
-    for(let dir in surroundings){
-// console.log('dir:', dir);
-// console.log(surroundings[dir]);
-// console.log('====');
-      if(surroundings[dir].terrain === TILE.EMPTY){
-        move.from = army
-        move.to = surroundings[dir].index
-        // update the elapse timer
-        move.elapse = new Date().getTime() - move.elapse;
-        return move
+      // Prefer empty space
+      for(let dir in surroundings){
+        if(surroundings[dir].terrain === TILE.EMPTY && 
+          game.cities.indexOf(surroundings[dir].index) < 0)
+        {
+          move.from = sorted[i];
+          move.to = surroundings[dir].index
+          // update the elapse timer
+          move.elapse = new Date().getTime() - move.elapse;
+          return move
+        }
       }
     }
 
     // Move away from base if none empty
-    let pref: Array<string> = [];
-
     let fromRow = Math.floor(from / game.width);
     let fromCol = from % game.width;
 
-    let row = Math.floor(army / game.width);
-    let col = army % game.width;
+    for(var i in sorted){
+      let pref: Array<string> = [];
 
-    if(row < fromRow){
-      pref = ['down', 'left', 'right', 'up']
-    } else if(row > fromRow){ 
-      pref = ['up', 'left', 'right', 'down']
-    } else if(col < fromCol){
-      pref = ['left', 'up', 'down', 'right']
-    } else if(col > fromCol){
-      pref = ['right', 'down', 'up', 'left']
-    } else {
-      // TODO: this should be smarter
-      pref = ['right', 'left', 'up', 'down']
-    }
+      let row = Math.floor(sorted[i] / game.width);
+      let col = sorted[i] % game.width;
+      let surroundings = Attacks.getSurroundings(sorted[i], game);
 
-    // for(let dir in pref){
-    //   if(surroundings[dir].terrain === TILE.EMPTY){
-    //     move.from = army
-    //     move.to = surroundings[dir].index
-    //     // update the elapse timer
-    //     move.elapse = new Date().getTime() - move.elapse;
-    //     return move
-    //   }
-    // }
-    for(let dir in pref){
-    
-      if(surroundings[pref[dir]].terrain === TILE.MINE){
-        move.from = army
-        move.to = surroundings[pref[dir]].index
-        // update the elapse timer
-        move.elapse = new Date().getTime() - move.elapse;
-        return move
+      if(row > fromRow){
+        pref = ['down', 'left', 'right', 'up']
+      } else if(row < fromRow){ 
+        pref = ['up', 'left', 'right', 'down']
+      } else if(col < fromCol){
+        pref = ['left', 'up', 'down', 'right']
+      } else if(col > fromCol){
+        pref = ['right', 'down', 'up', 'left']
+      } else {
+        // TODO: this should be smarter
+        pref = ['right', 'left', 'up', 'down']
+      }
+
+      for(let dir in pref){   
+        // TODO: dont attack cities
+        if(surroundings[pref[dir]].terrain === TILE.MINE && 
+          game.cities.indexOf(surroundings[pref[dir]].index) < 0)
+        {
+          move.from = sorted[i];
+          move.to = surroundings[pref[dir]].index
+          // update the elapse timer
+          move.elapse = new Date().getTime() - move.elapse;
+          return move
+        }
       }
     }
-
-    // throw('FAIL')
 
     // update the elapse timer
     move.elapse = new Date().getTime() - move.elapse;

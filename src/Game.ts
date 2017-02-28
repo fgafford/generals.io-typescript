@@ -176,10 +176,10 @@ export class Game {
    * @param  {number} map   [description]
    * @return {[type]}       [description]
    */
-  public print(width: number, map: Array<number> ) {
-    for (var i = 0; i < map.length; i += width) {
+  public print = (map: Array<number> ): void => {
+    for (var i = 0; i < map.length; i += this.width) {
       var out: string = '[';
-      let row = map.slice(i, i + width);
+      let row = map.slice(i, i + this.width);
       for (let j = 0; j < row.length; j++) {
         out += row[j] + ',';
       }
