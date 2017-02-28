@@ -20,6 +20,10 @@ export class Attacks {
       };
   }
 
+  static getRandomInt = (min: number, max: number): number =>  {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
   /**
    * Spead out and capture the nearest empty lands!
    * If unable to capture a new land then move way from specified location.
@@ -30,7 +34,7 @@ export class Attacks {
    * @param {number} [from=game.Base] - tile to spread furthest from [optional]
    * @param {number} [minArmies=2] - only attack from Tiles with at least X armies  
    */
-  static infest(game: Game, useBase: boolean, from = game.BASE, minArmies = 2) {
+  static expand(game: Game, useBase: boolean, from = game.BASE, minArmies = 2): Move {
     let move = new Move(0,0, new Date().getTime());
     let readyToMove:Array<number> = [];
 
@@ -90,11 +94,12 @@ export class Attacks {
         pref = ['right', 'down', 'up', 'left']
       } else {
         // TODO: this should be smarter
-        pref = ['right', 'left', 'up', 'down']
+        pref = (new Date().getSeconds() % 2) === 0 ? 
+          ['right', 'left', 'up', 'down'] :
+          ['left', 'right', 'down', 'ups'];
       }
 
       for(let dir in pref){   
-        // TODO: dont attack cities
         if(surroundings[pref[dir]].terrain === TILE.MINE && 
           game.cities.indexOf(surroundings[pref[dir]].index) < 0)
         {
@@ -110,5 +115,22 @@ export class Attacks {
     // update the elapse timer
     move.elapse = new Date().getTime() - move.elapse;
     return move
+  }
+
+  static regroup(): Move {
+    let move = new Move(0,0,0)
+
+    function getIndexesInRange(from: number, range: number, game: Game){
+      let indexes: Array<number> = [];
+      
+      if(from - range > 0) indexes.push(from - range) // left
+      if(from + range <= game.width) indexes.push(from + range) // right
+
+      for(let i = 0; i < range; i++){
+        
+      }
+    }
+
+    return move;
   }
 }
