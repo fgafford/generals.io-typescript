@@ -19,7 +19,7 @@ export class Game {
   private playerSettings: any;
   private bot: bot;
 
-  private socket: SocketIOClient.Socket;
+  private socket: SocketIOClient.Socket = io('http://botws.generals.io')
 
   public playerIndex: number;
   public generals: Array<number>;
@@ -37,13 +37,17 @@ export class Game {
 
   // private botConfig;
 
-  constructor(gameSettings: any, player: any){
-    let botImpl = require(`./bots/${gameSettings.botName}`)['default'];  
-    this.bot = new botImpl();
+  constructor(gameSettings: any, player: any, testing = false){
+    if(!testing){
+      let botImpl = require(`./bots/${gameSettings.botName}`)['default'];  
+      this.bot = new botImpl();
 
-    this.socket = io('http://botws.generals.io');
+      // setup listening handlers
+      this.setupListeners(this.socket, gameSettings, player);
+    }
+  }
 
-    // setup listening handlers
+  setupListeners = (socket: SocketIOClient.Socket, gameSettings: any, player: any ): void => {
     this.socket.on('connect', () => {
       this.socket.emit('set_username', player.user_id, gameSettings.botName);
       console.log('Connected to server.');
