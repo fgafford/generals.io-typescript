@@ -1,8 +1,10 @@
  // /// <reference path="../lib/node6.d.ts" />
-
 import * as io from "socket.io-client";
 import { TILE } from "./GameConstants";
 import { bot } from "./bots/bot"
+import { Move } from './Move'
+
+const color = require('colors');
 // import { GameSettings } from "../config/gameSettings";
 
 /*
@@ -176,12 +178,26 @@ export class Game {
    * @param  {number} map   [description]
    * @return {[type]}       [description]
    */
-  public print = (map: Array<number> ): void => {
-    for (var i = 0; i < map.length; i += this.width) {
+  public print = (move?: Move): void => {
+    let key = {
+      [TILE.EMPTY]: ' ',
+      [TILE.MINE]: color.yellow('0'),
+      [TILE.FOG]: color.gray('~'),
+      [TILE.MOUNTAIN]: color.gray('M'),
+      [TILE.OBSTACLE]: color.cyan('?') 
+    };
+    for (var i = 0; i < this.terrain.length; i += this.width) {
       var out: string = '[';
-      let row = map.slice(i, i + this.width);
+      let row = this.terrain.slice(i, i + this.width);
       for (let j = 0; j < row.length; j++) {
-        out += row[j] + ',';
+        let index = i + j;
+        if(index == this.BASE){
+          out += color.red('B')  
+        } else if(this.cities.indexOf(index) >= 0){
+          out += color.green('=');
+        } else {
+          out += key[row[j]];
+        }
       }
       console.log(out + ']');
     }

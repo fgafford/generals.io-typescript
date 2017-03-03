@@ -8,9 +8,9 @@ export default class Recruit implements bot {
   constructor(){}
 
   update(game: Game): Move {
-    let move = Attacks.expand(game, true);
-    console.log("move:", move);
-    
+    let move: Move = Attacks.expand(game, true);   
+    game.print(move);
+
     return move;
   }
 
