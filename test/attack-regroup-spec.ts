@@ -30,7 +30,7 @@ describe("Attacks", () => {
       expect(res.length).to.equal(12);
     })
 
-    it('should have 1 tile in all directions at range 1', () => {
+    it('should have 4 correct indexes at range 1', () => {
       // Mock game object here...
       let from = 100;
       let game = new Game({}, {}, true)
@@ -38,24 +38,19 @@ describe("Attacks", () => {
 
       let res = Attacks.getIndexesAtRange(from, 1, game);
 
-// console.log(res);
-
-
       expect(res.indexOf(90)).to.above(-1);
       expect(res.indexOf(101)).to.above(-1);
       expect(res.indexOf(110)).to.above(-1);
       expect(res.indexOf(99)).to.above(-1);
     })
 
-    it('should have 1 tile in all directions at range 1', () => {
+    it('should have 8 correct indexes at range 2', () => {
       // Mock game object here...
       let from = 100;
       let game = new Game({}, {}, true)
       simple.mock(game, 'width', 10)
 
       let res = Attacks.getIndexesAtRange(from, 2, game);
-
-console.log(res);
 
       // clockwise from 12  
       expect(res.indexOf(80)).to.above(-1);
@@ -68,29 +63,27 @@ console.log(res);
       expect(res.indexOf(89)).to.above(-1);
     })
 
-//     it('should have 3 tile in all directions at range 1', () => {
-//       // Mock game object here...
-//       let from = 100;
-//       let game = new Game({}, {}, true)
-//       simple.mock(game, 'width', 10)
+    it('should have 12 correct indexes at range 3', () => {
+      // Mock game object here...
+      let from = 100;
+      let game = new Game({}, {}, true)
+      simple.mock(game, 'width', 10)
 
-//       let res = Attacks.getIndexesAtRange(from, 2, game);
+      let res = Attacks.getIndexesAtRange(from, 3, game);
 
-// console.log(res);
-
-//       // clockwise from 12  
-//       expect(res.indexOf(70)).to.above(-1);
-//       expect(res.indexOf(81)).to.above(-1);
-//       expect(res.indexOf(92)).to.above(-1);
-//       expect(res.indexOf(103)).to.above(-1);
-//       expect(res.indexOf(112)).to.above(-1);
-//       expect(res.indexOf(121)).to.above(-1);
-//       expect(res.indexOf(130)).to.above(-1);
-//       expect(res.indexOf(119)).to.above(-1);
-//       expect(res.indexOf(108)).to.above(-1);
-//       expect(res.indexOf(97)).to.above(-1);
-//       expect(res.indexOf(88)).to.above(-1);
-//       expect(res.indexOf(79)).to.above(-1);
-//     })
+      // clockwise from 12  
+      expect(res.indexOf(70)).to.above(-1);
+      expect(res.indexOf(81)).to.above(-1);
+      expect(res.indexOf(92)).to.above(-1);
+      expect(res.indexOf(103)).to.above(-1);
+      expect(res.indexOf(112)).to.above(-1);
+      expect(res.indexOf(121)).to.above(-1);
+      expect(res.indexOf(130)).to.above(-1);
+      expect(res.indexOf(119)).to.above(-1);
+      expect(res.indexOf(108)).to.above(-1);
+      expect(res.indexOf(97)).to.above(-1);
+      expect(res.indexOf(88)).to.above(-1);
+      expect(res.indexOf(79)).to.above(-1);
+    })
   })
 });

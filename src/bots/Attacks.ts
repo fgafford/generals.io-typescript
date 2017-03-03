@@ -126,11 +126,14 @@ export class Attacks {
       let indexes: Array<number> = [];
 
       // TODO: Check for out of range.... off the board (wrap index is a danger...)
-      for(let i = 0; i < range; i++){
-        indexes.push(from + (range - i) + (i * game.width)); // +x, -y -- 102, 111
-        indexes.push(from + i - ((range - i) * game.width)); // +x, +y -- 102, 91
-        indexes.push(from - (range - i) + (i * game.width)); // -x, -y -- 98, 109
-        indexes.push(from - i - ((range - i) * game.width)); // -x, +y -- 98, 89
+      for(let i = 0; i <= range; i++){
+        let x = range - i;
+        let y = i * game.width;  // or i * game.width
+        indexes.push(from + x - y); // +x, -y 
+        indexes.push(from - x + y); // -x, +y
+        if(i === 0 || i === range) continue; // prevent dups of X or Y at extreams
+        indexes.push(from + x + y); // +x, +y
+        indexes.push(from - x - y); // -x, -y
       }
 
       return indexes;

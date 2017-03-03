@@ -98,6 +98,7 @@ export class Game {
   }
 
    private update = (data: any): void => {
+    let moveTimer = new Date().getTime();
 
     this.turn = data.turn;
     // Patch the city and map diffs into our local variables.
@@ -128,8 +129,8 @@ export class Game {
       this.socket.emit('attack',move.from, move.to)
 
       // log time elapse
-      console.log("Think time: ",move.elapse,"ms");
-      
+      console.log("Total:", (new Date().getTime() - moveTimer), "ms");
+      console.log("Thinking: ", move.elapse, "ms");
     }
 
   }
