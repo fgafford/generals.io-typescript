@@ -117,20 +117,30 @@ export class Attacks {
     return move
   }
 
-  static regroup(): Move {
-    let move = new Move(0,0,0)
-
-    function getIndexesInRange(from: number, range: number, game: Game){
+  /**
+   * Get the indexes of tiles a specified number of moves away from a given point
+   * This does not take into account obsticles or enemy armies.
+   * 
+   */
+  static getIndexesAtRange(from: number, range: number, game: Game): Array<number> {
       let indexes: Array<number> = [];
-      
-      if(from - range > 0) indexes.push(from - range) // left
-      if(from + range <= game.width) indexes.push(from + range) // right
 
+      // TODO: Check for out of range.... off the board (wrap index is a danger...)
       for(let i = 0; i < range; i++){
-        
+        indexes.push(from + (range - i) + (i * game.width)); // +x, -y -- 102, 111
+        indexes.push(from + i - ((range - i) * game.width)); // +x, +y -- 102, 91
+        indexes.push(from - (range - i) + (i * game.width)); // -x, -y -- 98, 109
+        indexes.push(from - i - ((range - i) * game.width)); // -x, +y -- 98, 89
       }
+
+      return indexes;
     }
 
+  static regroup(): Move {
+    let move = new Move(0,0, new Date().getTime())
+
+    // update the elapse timer
+    move.elapse = new Date().getTime() - move.elapse;
     return move;
   }
 }
