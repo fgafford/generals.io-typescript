@@ -3,11 +3,12 @@
   "version": "0.0.0",
   "description": "generals-io-typescript",
   "license": "MIT",
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/forestgafford/generals.io-typescript.git"
+  },
   "author": "",
-  "keywords": [
-    ""
-  ],
+  "keywords": [],
   "files": [
     "lib"
   ],
@@ -35,5 +36,9 @@
   },
   "engines": {
     "node": ">=4.0.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "homepage": "https://bitbucket.org/forestgafford/generals.io-typescript#readme"
 }
