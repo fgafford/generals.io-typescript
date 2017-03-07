@@ -125,15 +125,23 @@ export class Attacks {
   static getIndexesAtRange(from: number, range: number, game: Game): Array<number> {
       let indexes: Array<number> = [];
 
-      // TODO: Check for out of range.... off the board (wrap index is a danger...)
+      let minX = 0;
+      let maxX = game.width;
+      let minY = 0;
+      let maxY = game.terrain.length;
+
+      let col = from % game.width;
+      let row = Math.floor(from / game.width);
+      
       for(let i = 0; i <= range; i++){
         let x = range - i;
-        let y = i * game.width;  // or i * game.width
-        indexes.push(from + x - y); // +x, -y 
-        indexes.push(from - x + y); // -x, +y
+        let y = i * game.width;
+
+        if(row + x <= maxX && from - y >= minY){ indexes.push(from + x - y);} // +x, -y 
+        if(row - x >= minX && from + y <= maxY){ indexes.push(from - x + y);} // -x, +y
         if(i === 0 || i === range) continue; // prevent dups of X or Y at extreams
-        indexes.push(from + x + y); // +x, +y
-        indexes.push(from - x - y); // -x, -y
+        if(row + x <= maxX && from + y <= maxY){ indexes.push(from + x + y);} // +x, +y
+        if(row - x >= minX && from - y >= minY){ indexes.push(from - x - y);} // -x, -y
       }
 
       return indexes;
