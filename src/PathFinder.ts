@@ -33,6 +33,7 @@ export class PathFinder {
             // itterate over spaces that need distance set
             for(let i = 0; i < indexesAtCount.length; i++){
                 let ins = Attacks.getIndexesAtRange(indexesAtCount[i], 1, this.game);
+
                 // itterate over sourrounding spaces (the ones that need updated)
                 for(let j = 0; j < ins.length; j++){
                     // ins[j] = space to get new count (count+1)
@@ -45,11 +46,9 @@ export class PathFinder {
             }
             count++;
             // this.print(from);
-            // if(count > 5) break;
         }
         
         console.log('PathFinder total: ', (new Date()).getTime() - clock ,'ms');
-        this.print(from);
     }
 
     public getIndexesAtMovesAway(path: Array<number>, count: number): Array<number> {
@@ -71,7 +70,7 @@ export class PathFinder {
             [TILE.MINE]: color.yellow('+'),
             [TILE.FOG]: color.gray('~'),
             [TILE.MOUNTAIN]: color.gray('M'),
-            [TILE.OBSTACLE]: color.cyan('?') 
+            [TILE.OBSTACLE]: color.red('%') 
         };
         for (var i = 0; i < this.game.terrain.length; i += this.game.width) {
             var out: string = '{';
@@ -80,16 +79,23 @@ export class PathFinder {
             
             for (let j = 0; j < row.length; j++) {
                 let printRow = color.gray('[');
+
                 if(pathRow[j] !== undefined){
                     printRow += pathRow[j] < 10 ? ' ' + color.green(pathRow[j]) : color.green(pathRow[j]);
                 } else {
                     printRow += ' ' + key[row[j]];
                 }
+
+                // print indexes
+                // let pad = '   '
+                // let num = (i+j).toString();
+                // printRow += pad.substring(0, pad.length - num.length) + num 
+
                 out += printRow + color.gray(']');
 
             }
             console.log(out + '}');
         }
-        console.log('=========================================================================');
+        console.log('==========================================================================');
     }
 }

@@ -83,12 +83,11 @@ describe("Attacks", () => {
       simple.mock(game, 'width', 10)
       simple.mock(game, 'terrain', new Array(100))
       
-      let res = Attacks.getIndexesAtRange(100, 2, game);
+      let res = Attacks.getIndexesAtRange(99, 2, game);
 
-      // clockwise from 12  
-      expect(res.indexOf(80)).to.above(-1);
-      expect(res.indexOf(89)).to.above(-1);
-      expect(res.indexOf(98)).to.above(-1);
+      expect(res.indexOf(79)).to.above(-1);
+      expect(res.indexOf(88)).to.above(-1);
+      expect(res.indexOf(97)).to.above(-1);
       expect(res.length).to.equal(3);
     })
 
@@ -105,6 +104,21 @@ describe("Attacks", () => {
       expect(res.indexOf(21)).to.above(-1);
       expect(res.indexOf(30)).to.above(-1);
       expect(res.length).to.equal(4);
+    })
+
+    it('should not spill indexes over to the right side when on the left', () => {
+      let game = new Game({}, {}, true)
+      simple.mock(game, 'width', 10)
+      simple.mock(game, 'terrain', new Array(100))
+      
+      let res = Attacks.getIndexesAtRange(50, 2, game);
+
+      expect(res.indexOf(30)).to.above(-1);
+      expect(res.indexOf(41)).to.above(-1);
+      expect(res.indexOf(52)).to.above(-1);
+      expect(res.indexOf(61)).to.above(-1);
+      expect(res.indexOf(70)).to.above(-1);
+      expect(res.length).to.equal(5);
     })
   })
 });

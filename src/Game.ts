@@ -61,6 +61,14 @@ export class Game {
     this.socket.on('disconnect', this.disconnect);
   }
 
+  public col(index: number): number{
+    return index % this.width;
+  }
+
+  public row(index: number): number{
+    return Math.floor(index / this.width)
+  }
+
   public up = (tile: number): {terrain: number; armies: number; index: number; } => {
     let row = Math.floor(tile / this.width);
     return {

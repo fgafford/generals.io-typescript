@@ -125,28 +125,35 @@ export class Attacks {
   static getIndexesAtRange(from: number, range: number, game: Game): Array<number> {
       let indexes: Array<number> = [];
 
-      let minX = 0;
-      let maxX = game.width;
-      let minY = 0;
-      let maxY = game.terrain.length;
+      function minX(index: number): number{
+        return index - game.col(index)
+      }
 
-      let col = from % game.width;
-      let row = Math.floor(from / game.width);
-      
+      function maxX(index: number): number{
+        return index - game.col(index) + game.width - 1;
+      }
+
+      let minY = 0; // below index
+      let maxY = game.terrain.length; // out of range
+
       for(let i = 0; i <= range; i++){
         let x = range - i;
         let y = i * game.width;
 
-        if(row + x <= maxX && from - y >= minY){ indexes.push(from + x - y);} // +x, -y 
-        if(row - x >= minX && from + y <= maxY){ indexes.push(from - x + y);} // -x, +y
+        if(from + x - y <= maxX(from - y) && from - y >= minY){ indexes.push(from + x - y);} // +x, -y 
+        if(from - x + y >= minX(from + y) && from + y <= maxY){ indexes.push(from - x + y);} // -x, +y
         if(i === 0 || i === range) continue; // prevent dups of X or Y at extreams
-        if(row + x <= maxX && from + y <= maxY){ indexes.push(from + x + y);} // +x, +y
-        if(row - x >= minX && from - y >= minY){ indexes.push(from - x - y);} // -x, -y
+        if(from + x + y <= maxX(from + y) && from + y <= maxY){ indexes.push(from + x + y);} // +x, +y
+        if(from - x - y >= minX(from - y) && from - y >= minY){ indexes.push(from - x - y);} // -x, -y
       }
 
       return indexes;
     }
 
+
+  /**
+   * 
+   */
   static regroup(): Move {
     let move = new Move(0,0, new Date().getTime())
 

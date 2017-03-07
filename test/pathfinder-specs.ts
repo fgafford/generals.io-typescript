@@ -18,7 +18,7 @@ describe("Pathfinder", () => {
     it('should do things...', () => {
       let pf = new PathFinder(game);
       pf.buildPath(game.BASE)
-      // pf.print();
+      pf.print(game.BASE);
     })
 
 });
