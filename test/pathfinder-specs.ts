@@ -9,7 +9,7 @@ const expect = chai.expect;
 
 describe("Pathfinder", () => {
     // Mock game object here...
-    const map = require('./maps/map2')
+    const map = require('./maps/map4')
     let game = new Game({}, {}, true)
     simple.mock(game, 'width', map.width)
     simple.mock(game, 'terrain', map.terrain)
@@ -17,7 +17,8 @@ describe("Pathfinder", () => {
 
     it('should do things...', () => {
       let pf = new PathFinder(game);
-      pf.buildPath(game.BASE)
+      pf.buildAllPaths();
+      // pf.buildPath(game.BASE)
       pf.print(game.BASE);
     })
 

@@ -7,24 +7,78 @@ import { Attacks } from './bots/Attacks'
 const color = require('colors');
 
 export class PathFinder {
-    // cache all the routes?
     private game: Game;
     private terrain: Array<number>;
     private paths: Array<Array<number>> = [];
 
+    /**
+     * @constructor
+     * @param game - current game object
+     */
     constructor(game: Game){
         this.game = game;
         this.terrain = game.terrain.slice(0);
     }
 
-    public buildPath(from: number): void {
+    /**
+     * Get the next move on the fastest route where we are going
+     * 
+     * @param from - index starting from
+     * @param to - index of goal
+     */
+    public fastest(from: number, to: number):{index: number, moves: number} {
+        return this.allMoves(from, to)
+                    .sort((a,b) => a.moves - b.moves)[0];
+    }
+
+    /**
+     * Get the next move along the way to a given location
+     * 
+     * @param from - index starting from
+     * @param to - index of goal
+     * @param agress - NOT currently implemented
+     */
+    public allMoves(from: number, to: number, aggress?: boolean): Array<{index: number, moves: number}> {
+        if(!this.paths[to]){ this.buildPath(to) }
+        let path = this.paths[to];
+
+        let moves = Attacks.getIndexesAtRange(from, 1, this.game)
+                            .filter(i => !!i)
+                            .map(i => ({ index: i, moves: path[i]}))
+
+        return moves;
+    }
+
+    /**
+     * Builds all paths for the maps.
+     * These paths do NOT take into account cities (allied, enemy, or neutral)
+     * and does not take into account enemy or allied armies.
+     */
+    public buildAllPaths(){
         let clock = new Date().getTime();
 
-        if(this.paths[from] === undefined){
-            this.paths[from] = [];
-            this.paths[from][from] = 0;
+        for(let i = 0; i < this.terrain.length; i++){
+            if(this.terrain[i] !== -4 /* Or some other ones*/){
+                this.buildPath(i);
+            }
         }
-        let path = this.paths[from];
+
+        console.log('PathFinder All-Paths total: ', (new Date()).getTime() - clock ,'ms');
+    }
+
+    /**
+     * Builds and stores all paths to the specified location
+     * 
+     * @param goal - the end location we want to build paths to 
+     */
+    public buildPath(goal: number): void {
+        let clock = new Date().getTime();
+
+        if(this.paths[goal] === undefined){
+            this.paths[goal] = [];
+            this.paths[goal][goal] = 0;
+        }
+        let path = this.paths[goal];
 
         let count = 0;
         while(true){
@@ -45,13 +99,20 @@ export class PathFinder {
                 } 
             }
             count++;
-            // this.print(from);
+            // this.print(goal);
         }
         
         console.log('PathFinder total: ', (new Date()).getTime() - clock ,'ms');
+        // this.print(goal);
     }
 
-    public getIndexesAtMovesAway(path: Array<number>, count: number): Array<number> {
+    /**
+     * Retuns an array of all the indexes that are X number of moves from the goal
+     * 
+     * @param path - the index of the goal we are building paths to
+     * @param count - the move count we want to find indexes at
+     */
+    private getIndexesAtMovesAway(path: Array<number>, count: number): Array<number> {
         // could use reduce here...
         var indexes:Array<number> = [];
         for(let i = 0; i < this.terrain.length; i++){
@@ -60,10 +121,11 @@ export class PathFinder {
         return indexes;
     }
 
-    public setSurroundingTiles(): void {
-
-    }
-
+    /**
+     * print all the path count for a single goal
+     * 
+     * @param goal - the end goal we want to print the paths for
+     */
     public print(goal: number): void {
         let key = {
             [TILE.EMPTY]: ' ',

@@ -1,4 +1,4 @@
 export const GameSettings = {
   gameName: "fgafford_DOJO",
-  botName: "Recruit.js"
+  botName: "Scout.js"
 };

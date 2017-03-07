@@ -13,10 +13,10 @@ export class Attacks {
    */
   static getSurroundings(tile: number, game: Game): any{
       return {
-        up: game.up(tile),
-        left: game.left(tile),
-        right: game.right(tile),
-        down: game.down(tile)
+        // up: game.up(tile),
+        // left: game.left(tile),
+        // right: game.right(tile),
+        // down: game.down(tile)
       };
   }
 

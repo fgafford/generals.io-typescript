@@ -68,7 +68,7 @@ export class Game {
   public row(index: number): number{
     return Math.floor(index / this.width)
   }
-
+/*
   public up = (tile: number): {terrain: number; armies: number; index: number; } => {
     let row = Math.floor(tile / this.width);
     return {
@@ -104,8 +104,8 @@ export class Game {
       index: tile + this.width
     };
   }
-
-   private update = (data: any): void => {
+*/
+  private update = (data: any): void => {
     let moveTimer = new Date().getTime();
 
     this.turn = data.turn;
