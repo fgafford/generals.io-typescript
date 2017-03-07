@@ -26,9 +26,12 @@ export class PathFinder {
      * @param from - index starting from
      * @param to - index of goal
      */
-    public fastest(from: number, to: number):{index: number, moves: number} {
-        return this.allMoves(from, to)
-                    .sort((a,b) => a.moves - b.moves)[0];
+    public fastest(from: number, to: number):{index: number, distance: number} {
+        var moves =  this.allMoves(from, to)
+                    .sort((a,b) => a.distance - b.distance);
+        console.log('Fastet:', moves);
+        
+        return moves[0]
     }
 
     /**
@@ -38,15 +41,25 @@ export class PathFinder {
      * @param to - index of goal
      * @param agress - NOT currently implemented
      */
-    public allMoves(from: number, to: number, aggress?: boolean): Array<{index: number, moves: number}> {
+    public allMoves(from: number, to: number, aggress?: boolean): Array<{index: number, distance: number}> {
         if(!this.paths[to]){ this.buildPath(to) }
         let path = this.paths[to];
 
         let moves = Attacks.getIndexesAtRange(from, 1, this.game)
-                            .filter(i => !!i)
-                            .map(i => ({ index: i, moves: path[i]}))
+                            .map(i => ({ index: i, distance: path[i]}))
+                            .filter(i => !!i.distance)
 
         return moves;
+    }
+
+    /**
+     * 
+     * @param from 
+     * @param to 
+     */
+    public distanceTo(from: number, to: number): number {
+        if(!this.paths[to]){ this.buildPath(to) }
+        return this.paths[to][from];
     }
 
     /**
@@ -92,7 +105,7 @@ export class PathFinder {
                 for(let j = 0; j < ins.length; j++){
                     // ins[j] = space to get new count (count+1)
                     if(path[ins[j]] === undefined && 
-                       this.terrain[ins[j]] !== TILE.OBSTACLE)
+                       (this.terrain[ins[j]] !== TILE.OBSTACLE ||this.terrain[ins[j]] !== TILE.MOUNTAIN))
                     {
                         path[ins[j]] = count + 1;
                     }
