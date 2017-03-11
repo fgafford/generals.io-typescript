@@ -45,7 +45,7 @@ export class PathFinder {
         if(!this.paths[to]){ this.buildPath(to) }
         let path = this.paths[to];
 
-        let moves = Attacks.getIndexesAtRange(from, 1, this.game)
+        let moves = this.getSurroundingIndexes(from, this.game)
                             .map(i => ({ index: i, distance: path[i]}))
                             .filter(i => !!i.distance)
 
@@ -99,13 +99,14 @@ export class PathFinder {
             if(!indexesAtCount.length) break;
             // itterate over spaces that need distance set
             for(let i = 0; i < indexesAtCount.length; i++){
-                let ins = Attacks.getIndexesAtRange(indexesAtCount[i], 1, this.game);
+                let ins = this.getSurroundingIndexes(indexesAtCount[i], this.game);
 
                 // itterate over sourrounding spaces (the ones that need updated)
                 for(let j = 0; j < ins.length; j++){
                     // ins[j] = space to get new count (count+1)
                     if(path[ins[j]] === undefined && 
-                       (this.terrain[ins[j]] !== TILE.OBSTACLE ||this.terrain[ins[j]] !== TILE.MOUNTAIN))
+                       this.terrain[ins[j]] !== TILE.OBSTACLE && 
+                       this.terrain[ins[j]] !== TILE.MOUNTAIN)
                     {
                         path[ins[j]] = count + 1;
                     }
@@ -131,6 +132,23 @@ export class PathFinder {
         for(let i = 0; i < this.terrain.length; i++){
             if(path[i] === count){ indexes.push(i); }
         }
+        return indexes;
+    }
+
+    /**
+     * 
+     * @param from 
+     * @param range 
+     * @param game 
+     */
+    private getSurroundingIndexes(from: number, game: Game): Array<number>{
+        let indexes: Array<number> = [];
+
+        if(from - game.width > -1){indexes.push(from - game.width)} // up
+        if(from + game.width < game.terrain.length){indexes.push(from + game.width)} // down
+        if(from % game.width > 0 ){indexes.push(from - 1)} // left
+        if(from % game.width < game.width){indexes.push(from + 1)} // right
+
         return indexes;
     }
 

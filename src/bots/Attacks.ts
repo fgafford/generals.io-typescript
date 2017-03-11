@@ -121,7 +121,7 @@ export class Attacks {
    * Get the indexes of tiles a specified number of moves away from a given point
    * This does not take into account obsticles or enemy armies.
    * 
-   */
+   *
   static getIndexesAtRange(from: number, range: number, game: Game): Array<number> {
       let indexes: Array<number> = [];
 
@@ -149,7 +149,7 @@ export class Attacks {
 
       return indexes;
     }
-
+    */
 
   /**
    * 
