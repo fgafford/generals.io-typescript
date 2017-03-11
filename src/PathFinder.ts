@@ -29,7 +29,6 @@ export class PathFinder {
     public fastest(from: number, to: number):{index: number, distance: number} {
         var moves =  this.allMoves(from, to)
                     .sort((a,b) => a.distance - b.distance);
-        console.log('Fastet:', moves);
         
         return moves[0]
     }
@@ -47,7 +46,7 @@ export class PathFinder {
 
         let moves = this.getSurroundingIndexes(from, this.game)
                             .map(i => ({ index: i, distance: path[i]}))
-                            .filter(i => !!i.distance)
+                            .filter(i => !isNaN(i.distance))
 
         return moves;
     }
@@ -76,7 +75,7 @@ export class PathFinder {
             }
         }
 
-        console.log('PathFinder All-Paths total: ', (new Date()).getTime() - clock ,'ms');
+        // console.log('PathFinder All-Paths total: ', (new Date()).getTime() - clock ,'ms');
     }
 
     /**
@@ -116,7 +115,7 @@ export class PathFinder {
             // this.print(goal);
         }
         
-        console.log('PathFinder total: ', (new Date()).getTime() - clock ,'ms');
+        // console.log('PathFinder total: ', (new Date()).getTime() - clock ,'ms');
         // this.print(goal);
     }
 
@@ -136,18 +135,20 @@ export class PathFinder {
     }
 
     /**
+     * Gets the immediate indexes surrounding an index (up, down, left, right)
+     * The function will only return valud indexes onces that are outside the bounds
+     * of the grid will not be included
      * 
-     * @param from 
-     * @param range 
-     * @param game 
+     * @param from - the index to get surrounding indexes for
+     * @param game - the current game object
      */
-    private getSurroundingIndexes(from: number, game: Game): Array<number>{
+    public getSurroundingIndexes(from: number, game: Game): Array<number>{
         let indexes: Array<number> = [];
 
         if(from - game.width > -1){indexes.push(from - game.width)} // up
         if(from + game.width < game.terrain.length){indexes.push(from + game.width)} // down
         if(from % game.width > 0 ){indexes.push(from - 1)} // left
-        if(from % game.width < game.width){indexes.push(from + 1)} // right
+        if(from % game.width < game.width - 1){indexes.push(from + 1)} // right
 
         return indexes;
     }

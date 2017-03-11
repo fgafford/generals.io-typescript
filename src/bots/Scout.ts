@@ -42,7 +42,7 @@ console.log('all:', canAttack);
 
 console.log('army:', army);
 
-      var next = bot.PF.fastest(army.index, 23);
+      var next = bot.PF.fastest(army.index, 0);
 console.log('next:', next);
 
       let move =  new Move(army.index, next.index, (new Date()).getTime() - timer);
