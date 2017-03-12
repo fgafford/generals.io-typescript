@@ -8,7 +8,8 @@ const simple = require('simple-mock')
 const expect = chai.expect;
 
 describe("Pathfinder", () => {
-    const miniMap = require('./maps/miniMap')
+    const microMap = require('./maps/5x5')
+    const miniMap = require('./maps/5x5')
     const map1 = require('./maps/map1')
     const map2 = require('./maps/map2')
     const map3 = require('./maps/map3')
@@ -126,7 +127,7 @@ describe("Pathfinder", () => {
     })
 
     /**
-     * allMoves
+     * fastest
      */
     describe('fastest', () => {
         it('should return move to go when 1 away', () => {
@@ -143,5 +144,29 @@ describe("Pathfinder", () => {
           expect(move.distance).to.equal(0);
           expect(move.index).to.equal(game.BASE);
         })
+    })
+
+    /**
+     * 
+     */
+    describe('getNearest', () => {
+      it('should return all surrounding matches', () => {
+          const map = microMap;
+          // Mock game object here...
+          let game = new Game({}, {}, true)
+            simple.mock(game, 'width', map.width)
+            simple.mock(game, 'terrain', map.terrain)
+            simple.mock(game, 'BASE', map.BASE)
+
+          let pf = new PathFinder(game);
+
+          // Need to Mock the terrain in other tests cases....
+      })
+
+      it('should not return surrounding tiles that do not match', () => {})
+
+      it('should only return the nearest match', () => {})
+
+      it('should show the proper distance to the match', () => {})
     })
 });

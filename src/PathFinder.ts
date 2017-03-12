@@ -21,6 +21,15 @@ export class PathFinder {
     }
 
     /**
+     * Get the path to a given tile. 
+     * If path is not stored then generate and save it
+     */
+    private getPath(to: number): number[]{
+        if(!this.paths[to]){ this.buildPath(to) }
+        return this.paths[to];
+    }
+
+    /**
      * Get the next move on the fastest route where we are going
      * 
      * @param from - index starting from
@@ -125,12 +134,33 @@ export class PathFinder {
      * @param path - the index of the goal we are building paths to
      * @param count - the move count we want to find indexes at
      */
-    private getIndexesAtMovesAway(path: Array<number>, count: number): Array<number> {
+    private getIndexesAtMovesAway(path: number[], count: number): number[] {
         // could use reduce here...
         var indexes:Array<number> = [];
         for(let i = 0; i < this.terrain.length; i++){
             if(path[i] === count){ indexes.push(i); }
         }
+        return indexes;
+    }
+
+    /**
+     * get the index of the nearest tile with the matching terrain type
+     */
+    public getNearest(from: number, terrain = TILE.EMPTY): number[]{
+        let path = this.getPath(from);
+       
+        let indexes: number[] = [];
+        for(let i = 0; i < 100; i++){
+            // get indexes at distance
+            let ins = this.getIndexesAtMovesAway(path,i);
+            for(let j = 0; j < ins.length; j++){
+                if(this.game.terrain[j] === terrain){
+                    indexes.push(j);
+                }
+            }
+            if(indexes.length){ return indexes; }
+        }
+
         return indexes;
     }
 

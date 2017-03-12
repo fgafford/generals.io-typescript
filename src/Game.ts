@@ -77,34 +77,8 @@ export class Game {
       index: tile - this.width
     };
   }
-
-  public left = (tile: number): {terrain: number; armies: number; index: number; } => {
-    let col = tile % this.width;
-    return {
-      terrain: col === 1 ? TILE.MOUNTAIN : this.terrain[tile-1],
-      armies: col === 1 ? TILE.MOUNTAIN : this.armies[tile-1],
-      index: tile - 1
-    };
-  }
-
-  public right = (tile: number): {terrain: number; armies: number; index: number; } => {
-    let col = tile % this.width;
-    return {
-      terrain: col === this.width ? TILE.MOUNTAIN : this.terrain[tile+1],
-      armies: col === this.width ? TILE.MOUNTAIN : this.armies[tile+1],
-      index: tile + 1
-    };
-  }
-
-  public down = (tile: number): {terrain: number; armies: number; index: number; } => {
-    let row = Math.floor(tile / this.width);
-    return {
-      terrain: row > this.height ? TILE.MOUNTAIN : this.terrain[tile + this.width],
-      armies: row > this.height ? TILE.MOUNTAIN : this.armies[tile + this.width],
-      index: tile + this.width
-    };
-  }
 */
+
   private update = (data: any): void => {
     let moveTimer = new Date().getTime();
 
@@ -121,9 +95,6 @@ export class Game {
     // The last |size| terms are terrain values.
     // terrain[0] is the top-left corner of the map.
     this.terrain = this.map.slice(this.size + 2, this.size + 2 + this.size);
-
-
-
 
     // save the location of our base
     if(data.turn === 1){
@@ -142,6 +113,7 @@ export class Game {
       // log time elapse
       console.log("Total:", (new Date().getTime() - moveTimer), "ms");
       console.log("Thinking: ", move.elapse, "ms");
+      this.print();
     }
 
   }
