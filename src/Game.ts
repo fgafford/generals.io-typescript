@@ -111,6 +111,7 @@ export class Game {
       this.socket.emit('attack',move.from, move.to)
 
       // log time elapse
+      console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
       console.log("Total:", (new Date().getTime() - moveTimer), "ms");
       console.log("Thinking: ", move.elapse, "ms");
       this.print();
@@ -167,29 +168,42 @@ export class Game {
    * @return {[type]}       [description]
    */
   public print = (move?: Move): void => {
-    let key = {
-      [TILE.EMPTY]: ' ',
-      [TILE.MINE]: color.yellow('0'),
-      [TILE.FOG]: color.gray('~'),
-      [TILE.MOUNTAIN]: color.gray('M'),
-      [TILE.OBSTACLE]: color.cyan('?') 
-    };
-    for (var i = 0; i < this.terrain.length; i += this.width) {
-      var out: string = '[';
-      let row = this.terrain.slice(i, i + this.width);
-      for (let j = 0; j < row.length; j++) {
-        let index = i + j;
-        if(index == this.BASE){
-          out += color.red('B')  
-        } else if(this.cities.indexOf(index) >= 0){
-          out += color.green('=');
-        } else {
-          out += key[row[j]];
+        let key = {
+            [TILE.EMPTY]: ' ',
+            [TILE.MINE]: color.yellow('+'),
+            [TILE.FOG]: color.gray('~'),
+            [TILE.MOUNTAIN]: color.gray('M'),
+            [TILE.OBSTACLE]: color.cyan('?') 
+        };
+        for (var i = 0; i < this.terrain.length; i += this.width) {
+            var out: string = '{';
+            let row = this.terrain.slice(i, i + this.width);
+            let armyRow = this.armies.slice(i, i + this.width);
+            
+            for (let j = 0; j < row.length; j++) {
+                let printRow = color.gray('[');
+
+                if(armyRow[j] > 0){
+                    printRow += armyRow[j] > 99 ? 
+                                color.green(armyRow[j]) :
+                                armyRow[j] > 9 ? 
+                                 ' ' + color.green(armyRow[j]) : 
+                                 ' ' + color.green(armyRow[j]) + ' ';
+                } else {
+                    printRow += ' ' + key[row[j]] + ' ';
+                }
+
+                // print indexes
+                // let pad = '   '
+                // let num = (i+j).toString();
+                // printRow += pad.substring(0, pad.length - num.length) + num 
+
+                out += printRow + color.gray(']');
+
+            }
+            console.log(out + '}');
         }
-      }
-      console.log(out + ']');
+        console.log('==========================================================================');
     }
-    console.log('===================================');
-  }
 
 }

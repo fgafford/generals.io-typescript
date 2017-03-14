@@ -146,19 +146,30 @@ export class PathFinder {
     /**
      * get the index of the nearest tile with the matching terrain type
      */
-    public getNearest(from: number, terrain = TILE.EMPTY): number[]{
+    public getNearest(from: number, terrain = TILE.ANY_ENEMY): Array<{index: number, distance: number}>{
         let path = this.getPath(from);
-       
-        let indexes: number[] = [];
-        for(let i = 0; i < 100; i++){
+
+        let indexes:Array<{index: number, distance: number}> = [];
+        let i = 1;
+        while(this.getIndexesAtMovesAway(path,i).length){
             // get indexes at distance
             let ins = this.getIndexesAtMovesAway(path,i);
-            for(let j = 0; j < ins.length; j++){
-                if(this.game.terrain[j] === terrain){
-                    indexes.push(j);
+            
+            for(let j = 0; j < ins.length; j++){ 
+                if((terrain === TILE.ANY_ENEMY &&
+                    this.game.terrain[ins[j]] > 0) ||
+                    this.game.terrain[ins[j]] === terrain)
+                { 
+                    indexes.push({
+                        index: ins[j],
+                        distance: i
+                    });
+                       
                 }
             }
-            if(indexes.length){ return indexes; }
+            
+            if(indexes.length > 0){ return indexes; }
+            ++i;
         }
 
         return indexes;

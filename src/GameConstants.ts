@@ -3,5 +3,6 @@ export enum TILE {
   EMPTY = -1,
   MOUNTAIN = -2,
   FOG = -3,
-  OBSTACLE = -4
+  OBSTACLE = -4,
+  ANY_ENEMY = 100
 }
