@@ -41,7 +41,7 @@ export default class Recruit implements bot {
         return bot.pathFinder.distanceTo(a.index, game.BASE) - bot.pathFinder.distanceTo(b.index, game.BASE)})[0]
 
       if(army){
-        var nearest = bot.pathFinder.getNearest(army.index, TILE.EMPTY)[0];  
+        var nearest = bot.pathFinder.getNearest(army.index, TILE.EMPTY);  
         let next = bot.pathFinder.fastest(army.index, nearest.index);
         return new Move(army.index, next.index, (new Date()).getTime() - timer);
       } else {

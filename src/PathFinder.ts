@@ -11,6 +11,8 @@ export class PathFinder {
     private terrain: Array<number>;
     private paths: Array<Array<number>> = [];
 
+
+
     /**
      * @constructor
      * @param game - current game object
@@ -18,6 +20,14 @@ export class PathFinder {
     constructor(game: Game){
         this.game = game;
         this.terrain = game.terrain.slice(0);
+    }
+
+// Broken in Typesctipt compiler
+// Array["prototype"].randomItem = function(): any {
+//     return this[Math.floor(Math.random()*this.length)];
+// }
+    private randomItem<T>(arr: T[]): T {
+        return arr[Math.floor(Math.random()*arr.length)];
     }
 
     /**
@@ -103,7 +113,7 @@ export class PathFinder {
 
         let count = 0;
         while(true){
-            let indexesAtCount = this.getIndexesAtMovesAway(path, count);
+            let indexesAtCount = this.getIndexesAtMovesAway(goal, count);
             if(!indexesAtCount.length) break;
             // itterate over spaces that need distance set
             for(let i = 0; i < indexesAtCount.length; i++){
@@ -134,26 +144,26 @@ export class PathFinder {
      * @param path - the index of the goal we are building paths to
      * @param count - the move count we want to find indexes at
      */
-    private getIndexesAtMovesAway(path: number[], count: number): number[] {
-        // could use reduce here...
+    public getIndexesAtMovesAway(from: number, count: number): number[] {
+        let path = this.getPath(from);
+        
         var indexes:Array<number> = [];
         for(let i = 0; i < this.terrain.length; i++){
             if(path[i] === count){ indexes.push(i); }
         }
+
         return indexes;
     }
 
     /**
      * get the index of the nearest tile with the matching terrain type
      */
-    public getNearest(from: number, terrain = TILE.ANY_ENEMY): Array<{index: number, distance: number}>{
-        let path = this.getPath(from);
-
+    public getNearest(from: number, terrain = TILE.ANY_ENEMY): {index: number, distance: number}{
         let indexes:Array<{index: number, distance: number}> = [];
         let i = 1;
-        while(this.getIndexesAtMovesAway(path,i).length){
+        while(this.getIndexesAtMovesAway(from,i).length){
             // get indexes at distance
-            let ins = this.getIndexesAtMovesAway(path,i);
+            let ins = this.getIndexesAtMovesAway(from,i);
             
             for(let j = 0; j < ins.length; j++){ 
                 if((terrain === TILE.ANY_ENEMY &&
@@ -168,11 +178,11 @@ export class PathFinder {
                 }
             }
             
-            if(indexes.length > 0){ return indexes; }
+            if(indexes.length > 0){ return this.randomItem(indexes); }
             ++i;
         }
 
-        return indexes;
+        return this.randomItem(indexes);
     }
 
     /**

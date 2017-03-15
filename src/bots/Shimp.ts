@@ -46,7 +46,6 @@ export default class Recruit implements bot {
 
       if(army){
         if(seeEnemy){
-          console.log('should attack enemy');
           var enemy = bot.pathFinder.getNearest(army.index);  
           let next = bot.pathFinder.fastest(army.index, enemy.index);
           return new Move(army.index, next.index, (new Date()).getTime() - timer);

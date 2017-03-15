@@ -27,7 +27,7 @@ describe("Pathfinder", () => {
       let pf = new PathFinder(game);
       // pf.buildAllPat hs();
       pf.buildPath(game.BASE)
-      pf.print(game.BASE);
+      // pf.print(game.BASE);
     })
 
     /**
@@ -160,15 +160,11 @@ describe("Pathfinder", () => {
             simple.mock(game, 'BASE', map.BASE)
 
           let pf = new PathFinder(game);
-          let moves = pf.getNearest(game.BASE, TILE.EMPTY);
+          let move = pf.getNearest(game.BASE, TILE.EMPTY);
 
           // Need to Mock the terrain in other tests cases....
-          expect(moves.length).to.equal(4);
-
           let expected = [1,3,5,7];
-          for(let i of moves){
-            expect(expected.indexOf(i.index)).to.above(-1);
-          }
+          expect(expected.indexOf(move.index)).to.above(-1);
 
       })
 
@@ -185,8 +181,7 @@ describe("Pathfinder", () => {
           let moves = pf.getNearest(4, TILE.EMPTY);
 
           // Need to Mock the terrain in other tests cases....
-          expect(moves.length).to.equal(1);
-          expect(moves[0].index).to.equal(8);
+          expect(moves.index).to.equal(8);
       })
 
       it('should only return the nearest match', () => {
@@ -199,11 +194,10 @@ describe("Pathfinder", () => {
                                           0,-1,-1])
 
           let pf = new PathFinder(game);
-          let moves = pf.getNearest(0, TILE.EMPTY);
+          let move = pf.getNearest(0, TILE.EMPTY);
 
           // Need to Mock the terrain in other tests cases....
-          expect(moves.length).to.equal(1);
-          expect(moves[0].index).to.equal(7);
+          expect(move.index).to.equal(7);
       })
 
       it('should show the proper distance to the match', () => {
@@ -216,11 +210,10 @@ describe("Pathfinder", () => {
                                           0,0,-1])
 
           let pf = new PathFinder(game);
-          let moves = pf.getNearest(0, TILE.EMPTY);
+          let move = pf.getNearest(0, TILE.EMPTY);
 
           // Need to Mock the terrain in other tests cases....
-          expect(moves.length).to.equal(1);
-          expect(moves[0].distance).to.equal(4);
+          expect(move.distance).to.equal(4);
       })
 
       it('should default to attack any army', () => {
@@ -233,11 +226,10 @@ describe("Pathfinder", () => {
                                           0,-1,1])
 
           let pf = new PathFinder(game);
-          let moves = pf.getNearest(0);
+          let move = pf.getNearest(0);
 
           // Need to Mock the terrain in other tests cases....
-          expect(moves.length).to.equal(1);
-          expect(moves[0].index).to.equal(8);
+          expect(move.index).to.equal(8);
           
 
           simple.mock(game, 'terrain', [0,0, 1,
@@ -245,11 +237,10 @@ describe("Pathfinder", () => {
                                         0,-1,1])
 
           pf = new PathFinder(game);
-          moves = pf.getNearest(0);
+          move = pf.getNearest(0);
 
           // Need to Mock the terrain in other tests cases....
-          expect(moves.length).to.equal(1);
-          expect(moves[0].index).to.equal(2);
+          expect(move.index).to.equal(2);
       })
 
     })

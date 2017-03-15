@@ -2,6 +2,10 @@
 import { PlayerSettings } from '../config/PlayerSettings';
 import { GameSettings } from '../config/GameSettings';
 import { Game } from './Game';
+
+// Array["prototype"].randomItem = function(): any {
+//     return this[Math.floor(Math.random()*this.length)];
+// }
 /**
  * commander.js
  *
