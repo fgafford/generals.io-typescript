@@ -28,13 +28,16 @@ export default class Recruit implements bot {
     if(game.turn < 1) { return new Move(0,0, (new Date()).getTime() - timer) }
     if(game.turn > 100 && game.turn < 150){ 
       let move =  this.attacks.regroup();
-      if(move.from !== 0) {return move}
+      if(move) {return move}
     }
 
-    if(~game.terrain.indexOf(TILE.ANY_ENEMY)){
+    let enemies = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToBase);
+console.log('enemies', enemies);
+
+
+    if(enemies.length > 1){
       let army = this.attacks.getArmiesWithMinSize().sort(this.attacks.nearestToBase)[0]
-      var enemy = bot.pathFinder.getNearest(army.index,TILE.ANY_ENEMY);
-      return this.attacks.regroup(enemy.index, 15);  
+      return this.attacks.regroup(enemies[0].index, 15);  
     } else {
       return this.attacks.expand(game.turn < 90); // Expand
   }

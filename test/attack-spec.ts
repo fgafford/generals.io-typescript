@@ -54,10 +54,38 @@ describe("Attacks", () => {
             let pf = new PathFinder(game);
             let attacks = new Attacks(game, pf); 
 
-            let indexes = attacks.getArmiesWithMinSize(2, true)
+            let indexes = attacks.getArmiesWithMinSize(TILE.MINE, 2, true)
 
             expect(indexes.length).to.equal(1);
             expect(indexes[0].index).to.equal(0);
+            
+        })
+
+        it('should be able to find enemy armies', () => {
+            let map = microMap;
+            // Mock game object here...
+            let game = new Game({}, {}, true)
+                simple.mock(game, 'width', map.width)
+                simple.mock(game, 'terrain', map.terrain)
+                simple.mock(game, 'BASE', 0)
+                simple.mock(game,'terrain', [ 0,-1,-1,
+                                             -1,-1,-1,
+                                              1, 1, 1])
+                simple.mock(game, 'armies', [2,0,0,
+                                             0,0,0,
+                                             3,2,3])
+
+            let pf = new PathFinder(game);
+            let attacks = new Attacks(game, pf); 
+
+            let indexes = attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 2, true)
+
+            let expectedIndexes = [6,7,8];
+
+            expect(indexes.length).to.equal(3);
+            for(let tile of indexes){
+                expect(expectedIndexes.indexOf(tile.index)).to.above(-1)
+            }
             
         })
     })

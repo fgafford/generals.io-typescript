@@ -17,26 +17,32 @@ export class Attacks {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+  // getArmiesWithMinSize
+
   /**
    * Loops through and gets all the indexes with armies at a given or larger size
-   * 
-   * 
    */
-  public getArmiesWithMinSize(min: number = 2, useBase: boolean = false): Array<{index: number, armies: number}> {
+  public getArmiesWithMinSize(type: number = TILE.MINE, min: number = 2, includeBase: boolean = false, sort?:(a:{index: number, armies: number}, b:{index: number, armies: number}) => number): Array<{index: number, armies: number}> {
     // get from closest to Base
     var matches: Array<{index: number, armies: number}> = [];
 
     // find biggest army and move to 0
     for(let i = 0; i < this.game.terrain.length; i++){
-        if(this.game.terrain[i] === TILE.MINE && 
+        if((type === TILE.ANY_ENEMY ? 
+            (this.game.terrain[i] >= 1) : 
+            (this.game.terrain[i] === type)) && 
           this.game.armies[i] >= min && 
-          (useBase ? true : i !== this.game.BASE)) 
+          (includeBase ? true : i !== this.game.BASE)) 
         { 
           matches.push({ index:i, armies: this.game.armies[i]});
         }
     }
     
-    return matches;
+    if(sort){
+      return matches.sort(sort);
+    } else {
+      return matches;
+    }
   }
 
 
@@ -90,7 +96,7 @@ export class Attacks {
   public expand(useBase: boolean = true, minArmies: number = 2, sort?:(a:{index: number, armies: number}, b:{index: number, armies: number}) => number): Move {
     let started = (new Date().getTime());
     
-    let armies = this.getArmiesWithMinSize(minArmies, useBase);
+    let armies = this.getArmiesWithMinSize(TILE.MINE, minArmies, useBase);
 
     let ordered = armies.sort(sort || this.nearestToEmpty);
     let choosen = ordered[0]
