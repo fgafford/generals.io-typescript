@@ -16,18 +16,64 @@ describe("Pathfinder", () => {
     const map3 = require('./maps/map3')
     const map4 = require('./maps/map4')
 
-    it('basic test', () => {
+    it('should not error building all paths', () => {
       let map = microMap;
       // Mock game object here...
       let game = new Game({}, {}, true)
         simple.mock(game, 'width', map.width)
         simple.mock(game, 'terrain', map.terrain)
         simple.mock(game, 'BASE', map.BASE)
+        simple.mock(game, 'cities', map.cities || [])
+        
 
       let pf = new PathFinder(game);
-      // pf.buildAllPat hs();
-      pf.buildPath(game.BASE)
+      pf.buildAllPaths();
       // pf.print(game.BASE);
+    })
+
+    it('does not include visibile cities (as of now)', () => {
+      let map = miniMap;
+      // Mock game object here...
+      let game = new Game({}, {}, true)
+        simple.mock(game, 'width', map.width)
+        simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
+                                      -1,-1,-1,-1,-1,
+                                      -1, 0, 0,-1,-1,                                      
+                                      -1,-1,-1,-1,-1,
+                                      -1,-1,-1,-1,-1,])
+        simple.mock(game, 'armies',  [-1,-1,-1,-1,-1,
+                                      -1,-1,-1,-1,-1,
+                                      -1, 45,1,-1,-1,                                      
+                                      -1,-1,-1,-1,-1,
+                                      -1,-1,-1,-1,-1,])
+        simple.mock(game, 'BASE', map.BASE)
+        simple.mock(game, 'cities', [11])
+
+      let pf = new PathFinder(game);
+      pf.buildPath(game.BASE)
+
+      expect(pf.distanceTo(10,game.BASE)).to.equal(4);
+
+      // pf.print(game.BASE);
+    })
+
+    it('should not include BASE on another path (for now)', () => {
+      let map = microMap;
+      // Mock game object here...
+      let game = new Game({}, {}, true)
+        simple.mock(game, 'width', map.width)
+        simple.mock(game, 'terrain', map.terrain)
+        simple.mock(game, 'BASE', map.BASE)
+        simple.mock(game, 'cities', map.cities || [])
+        
+      let ind = 1;
+
+      let pf = new PathFinder(game);
+      pf.buildPath(ind);
+
+      expect(pf.distanceTo(7, ind)).to.equal(4);
+
+      // pf.print(ind);
     })
 
     /**
@@ -39,6 +85,7 @@ describe("Pathfinder", () => {
         let game = new Game({}, {}, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
+        simple.mock(game, 'cities', [])
 
         let pf = new PathFinder(game);
         let res = pf.getSurroundingIndexes(55, game);
@@ -54,6 +101,7 @@ describe("Pathfinder", () => {
         let game = new Game({}, {}, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
+        simple.mock(game, 'cities', [])
         
         let pf = new PathFinder(game);
         let res =  pf.getSurroundingIndexes(99, game);
@@ -67,6 +115,7 @@ describe("Pathfinder", () => {
         let game = new Game({}, {}, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
+        simple.mock(game, 'cities', [])
         
         let pf = new PathFinder(game);
         let res =  pf.getSurroundingIndexes(0, game);
@@ -81,6 +130,7 @@ describe("Pathfinder", () => {
         let game = new Game({}, {}, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
+        simple.mock(game, 'cities', [])
       
         let pf = new PathFinder(game);
         let res =  pf.getSurroundingIndexes(50, game);
@@ -103,6 +153,7 @@ describe("Pathfinder", () => {
           simple.mock(game, 'width', map.width)
           simple.mock(game, 'terrain', map.terrain)
           simple.mock(game, 'BASE', map.BASE)
+          simple.mock(game, 'cities', map.cities || [])
        
         let pf = new PathFinder(game);
         let moves = pf.allMoves(game.BASE - 1 , game.BASE)
@@ -119,6 +170,7 @@ describe("Pathfinder", () => {
           simple.mock(game, 'width', map.width)
           simple.mock(game, 'terrain', map.terrain)
           simple.mock(game, 'BASE', map.BASE)
+          simple.mock(game, 'cities', map.cities || [])
        
         let pf = new PathFinder(game);
         let moves = pf.allMoves(0 , game.BASE)
@@ -138,6 +190,7 @@ describe("Pathfinder", () => {
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', map.terrain)
             simple.mock(game, 'BASE', map.BASE)
+            simple.mock(game, 'cities', map.cities || [])
         
           let pf = new PathFinder(game);
           let move = pf.fastest(game.BASE - 1 , game.BASE)
@@ -158,6 +211,7 @@ describe("Pathfinder", () => {
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', map.terrain)
             simple.mock(game, 'BASE', map.BASE)
+            simple.mock(game, 'cities', map.cities || [])
 
           let pf = new PathFinder(game);
           let move = pf.getNearest(game.BASE, TILE.EMPTY);
@@ -176,6 +230,7 @@ describe("Pathfinder", () => {
             simple.mock(game, 'terrain', [0,0,0,
                                           0,0,0,
                                           0,0,-1])
+            simple.mock(game, 'cities', map.cities || [])
 
           let pf = new PathFinder(game);
           let moves = pf.getNearest(4, TILE.EMPTY);
@@ -192,6 +247,7 @@ describe("Pathfinder", () => {
             simple.mock(game, 'terrain', [0,0,0,
                                           0,0,0,
                                           0,-1,-1])
+            simple.mock(game, 'cities', map.cities || [])
 
           let pf = new PathFinder(game);
           let move = pf.getNearest(0, TILE.EMPTY);
@@ -208,6 +264,7 @@ describe("Pathfinder", () => {
             simple.mock(game, 'terrain', [0,0,0,
                                           0,0,0,
                                           0,0,-1])
+            simple.mock(game, 'cities', map.cities || [])
 
           let pf = new PathFinder(game);
           let move = pf.getNearest(0, TILE.EMPTY);
@@ -224,6 +281,7 @@ describe("Pathfinder", () => {
             simple.mock(game, 'terrain', [0,0,0,
                                           0,0,-1,
                                           0,-1,1])
+            simple.mock(game, 'cities', map.cities || []) 
 
           let pf = new PathFinder(game);
           let move = pf.getNearest(0);

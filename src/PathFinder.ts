@@ -71,6 +71,7 @@ export class PathFinder {
     }
 
     /**
+     * Gets the number of moves (fastest route) to another tile
      * 
      * @param from 
      * @param to 
@@ -104,6 +105,7 @@ export class PathFinder {
      */
     public buildPath(goal: number): void {
         let clock = new Date().getTime();
+        let isBasePath = goal === this.game.BASE;
 
         if(this.paths[goal] === undefined){
             this.paths[goal] = [];
@@ -122,9 +124,13 @@ export class PathFinder {
                 // itterate over sourrounding spaces (the ones that need updated)
                 for(let j = 0; j < ins.length; j++){
                     // ins[j] = space to get new count (count+1)
-                    if(path[ins[j]] === undefined && 
-                       this.terrain[ins[j]] !== TILE.OBSTACLE && 
-                       this.terrain[ins[j]] !== TILE.MOUNTAIN)
+                    let index = ins[j];
+                    if(path[index] === undefined && 
+                       this.terrain[index] !== TILE.OBSTACLE && 
+                       this.terrain[index] !== TILE.MOUNTAIN && 
+                       !~this.game.cities.indexOf(index) && 
+                       // if index is BASE and isBasePath then add
+                       (index === this.game.BASE ? isBasePath : true))
                     {
                         path[ins[j]] = count + 1;
                     }

@@ -77,6 +77,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'armies', [2,0,0,
                                              0,0,0,
                                              0,0,0])
+                simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
             let attacks = new Attacks(game, pf); 
@@ -102,6 +103,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'armies', [2,0,0,
                                              0,0,0,
                                              0,0,0])
+                simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
             let attacks = new Attacks(game, pf); 
@@ -127,6 +129,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'armies', [1,2,0,
                                              1,1,0,
                                              0,0,0])
+                simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
             let attacks = new Attacks(game, pf); 
@@ -150,6 +153,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'armies', [3,3,4,
                                              1,1,1,
                                              0,0,0])
+                simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
             let attacks = new Attacks(game, pf); 
@@ -175,6 +179,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'armies', [1,1,1,
                                              1,2,4,
                                              1,4,2])
+                simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
             let attacks = new Attacks(game, pf); 
@@ -200,6 +205,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'armies', [1,1,1,
                                              1,2,4,
                                              1,4,2])
+                simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
             let attacks = new Attacks(game, pf); 
@@ -226,6 +232,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'armies', [1,1,1,
                                              1,2,4,
                                              1,4,2])
+                simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
             let attacks = new Attacks(game, pf); 
