@@ -28,6 +28,7 @@ export class Game {
   public map: Array<number>;
   public terrain: Array<number>;
   public armies: Array<number>;
+  public scores: { total: number, tiles: number, i: number, dead: boolean }[];
 
   // Constants ////////////////////////////////
   public BASE: number;
@@ -87,6 +88,7 @@ export class Game {
     this.cities = this.patch(this.cities, data.cities_diff);
     this.map = this.patch(this.map, data.map_diff);
     this.generals = data.generals;
+    this.scores = data.scores;
 
     // The next |size| terms are army values.
     // armies[0] is the top-left corner of the map.
@@ -114,7 +116,7 @@ export class Game {
       console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
       console.log("Total:", (new Date().getTime() - moveTimer), "ms");
       console.log("Thinking: ", move.elapse, "ms");
-      this.print();
+      this.print();      
     }
 
   }

@@ -8,64 +8,86 @@ import { PathFinder } from '../PathFinder'
 export default class Recruit implements bot {
 
   private pathFinder: PathFinder;
+  private attacks: Attacks;
+  private turn: number;
+  private defense: number;
+  private maxStrength: number;
+  private enemyMaxStrength: number;
+  private scout: number = -1;
 
   constructor(){}
 
-  update(game: Game): Move {
-    let move: Move = new Move(0,0,0);  
-    let seeEnemy: boolean = false;
+  areWeDefended(): boolean {
+    if(this.defense > this.enemyMaxStrength){ return true; }
+    
+    // We have to make some progress at early
+    if(this.turn < 90){ return true; }
 
-    if(!this.pathFinder){ this.pathFinder = new PathFinder(game); }
-
-    let timer = new Date().getTime();
-    let bot = this;
-
-    if(!this.pathFinder){
-      this.pathFinder = new PathFinder(game);
-    }
-
-    if(game.turn > 3){
-      var canAttack: Array<{index: number, armies: number}> = [];
-      // find biggest army and move to 0
-      for(let i = 0; i < game.terrain.length; i++){
-          if(game.terrain[i] > 0){ seeEnemy = true; }
-          if(game.terrain[i] === TILE.MINE && 
-            game.armies[i] > 1) 
-          { 
-            canAttack.push({ index:i, armies: game.armies[i]});
-          }
-      }
-      
-      let army = canAttack.sort((a,b): number => {
-          // Push the base to the back (last option)
-          if(a.index === game.BASE) return 1;
-          if(b.index === game.BASE) return -1;
-          // return bot.pathFinder.distanceTo(a.index, game.BASE) - bot.pathFinder.distanceTo(b.index, game.BASE)
-          return b.armies - a.armies;
-      })[0]
-
-      if(army){
-        if(seeEnemy){
-          console.log('should attack enemy');
-          var enemy = bot.pathFinder.getNearest(army.index);  
-          let next = bot.pathFinder.fastest(army.index, enemy.index);
-          return new Move(army.index, next.index, (new Date()).getTime() - timer);
-
-        } else {
-          // Expand
-          var nearest = bot.pathFinder.getNearest(army.index, TILE.EMPTY);  
-          let next = bot.pathFinder.fastest(army.index, nearest.index);
-          return new Move(army.index, next.index, (new Date()).getTime() - timer);
-        }
-      } else {
-        return new Move(0,0, (new Date()).getTime() - timer)
-      }
-
-
+    let minPercent = 1;
+    // Assume 75% defence is safe in early game 
+    if(this.maxTurnLandBonus() <= 2){
+      minPercent = .9
+    } else if(this.maxTurnLandBonus() < 5 ){ 
+      minPercent = .75 
     } else {
-      return new Move(0,0, (new Date()).getTime() - timer)
+      minPercent = .5
     }
+    // Are we above the minimum defence?
+    return ((this.defense / this.enemyMaxStrength) > minPercent);
+  } 
 
+  /**
+   * The maximum number of bonus armies given for land own since game start
+   */
+  maxTurnLandBonus(): number { return Math.floor((this.turn+1)/ 50) }
+
+
+  /**
+   * The meet of the bot
+   */
+  update(game: Game): Move {
+      let timer = new Date().getTime();
+
+      let move: Move = new Move(0,0,0);
+      let odd: boolean = !!(game.turn % 2);
+      this.defense = game.armies[game.BASE];
+      this.maxStrength = game.scores[0].total - game.scores[0].tiles;
+      this.enemyMaxStrength = game.scores[1].total - game.scores[1].tiles;
+
+console.log('D:', this.defense);
+console.log('E:', this.enemyMaxStrength);
+console.log('safe:', this.areWeDefended());
+
+
+
+
+      if(!this.pathFinder){ this.setup(game); }
+
+      if(1 /*odd*/){
+        return this.attacks.expand(this.areWeDefended()); // Expand
+      } else {
+
+      }
+
+
+      // if(game.turn > 100 && game.turn < 150){ 
+      //   let move =  this.attacks.regroup();
+      //   if(move) { return move; }
+      // }
+
+      // let enemies = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 0, false, this.attacks.nearestToBase);
+
+      // if(enemies.length > 1){
+      //   let army = this.attacks.getArmiesWithMinSize().sort(this.attacks.nearestToBase)[0]
+      //   return this.attacks.regroup(enemies[0].index, 15);  
+      // } else {
+      //   return this.attacks.expand(game.turn < 90); // Expand
+      // }
+  }
+
+  setup(game: Game): void {
+    this.pathFinder = new PathFinder(game);
+    this.attacks = new Attacks(game, this.pathFinder); 
   }
 
 }

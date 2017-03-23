@@ -31,7 +31,7 @@ export default class Recruit implements bot {
       if(move) {return move}
     }
 
-    let enemies = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToBase);
+    let enemies = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 0, false, this.attacks.nearestToBase);
 console.log('enemies', enemies);
 
 
