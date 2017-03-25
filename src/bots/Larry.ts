@@ -9,6 +9,10 @@ export default class Recruit implements bot {
 
   // if enemy inside this range make attacking them top priority
   private intruderRange = 7;
+  // minimum lands before we expand no further
+  private minLands = 75;
+  // minimun ours to their ratio (exand more if we are below a ratio)
+  private minLandRatio = 1.15;
 
   private pathFinder: PathFinder;
   private attacks: Attacks;
@@ -46,6 +50,11 @@ export default class Recruit implements bot {
    */
   maxTurnLandBonus(): number { return Math.floor((this.turn+1)/ 50) }
 
+  /**
+   * Move the largest army on the board towards a given index
+   * 
+   * @param index - end goal
+   */
   moveLargestArmyTo(index: number): Move {
       // regroup effors
       let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE, 2, false, this.attacks.largestFirst)[0];
@@ -53,6 +62,12 @@ export default class Recruit implements bot {
       return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
   }
 
+  /**
+   * The ratio of allied lands to enemy lands
+   */
+  landRatio(): number {
+    return this.game.scores[0].tiles / this.game.scores[1].tiles
+  }
 
   /**
    * The meet of the bot
@@ -87,16 +102,22 @@ console.log('safe:', this.areWeDefended());
         // regroup effors
         return this.moveLargestArmyTo(game.BASE);
       } else {
+  
         // attack efforts
-        let self = this;
+        if(this.game.scores[0].tiles < this.minLands ||
+          this.landRatio() < this.minLandRatio)
+        {
+          let self = this;
+          let largestMove = this.moveLargestArmyTo(game.BASE);
+          let filter = (army:{index: number}): boolean => {
+            return army.index !== largestMove.from;
+          }
 
-        let largestMove = this.moveLargestArmyTo(game.BASE);
-        let filter = (army:{index: number}): boolean => {
-          return army.index !== largestMove.from;
+          let move =  this.attacks.expand(this.areWeDefended(), 2, null, filter); // Expand
+          return move ? move : largestMove;
         }
 
-        let move =  this.attacks.expand(this.areWeDefended(), 2, null, filter); // Expand
-        return move ? move : largestMove;
+        return null;
       }
   }
 
