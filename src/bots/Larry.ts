@@ -36,7 +36,7 @@ export default class Recruit implements bot {
     if(this.defense > this.enemyMaxStrength){ return true; }
     
     // We have to make some progress at early
-    if(this.turn < 90){ return true; }
+    if(this.turn < 75){ return true; }
 
     let minPercent = 1;
     // Assume 75% defence is safe in early game 
@@ -63,7 +63,7 @@ export default class Recruit implements bot {
    */
   moveLargestArmyTo(index: number): Move {
       // regroup effors
-      let armies = this.attacks.getArmiesWithMinSize(TILE.MINE, 2, false, this.attacks.largestFirst);
+      let armies = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst);
       let regroupArmy = (armies[0].index === this.vanguard.index) ? armies[1] :armies[0];
       let next = this.pathFinder.fastest(regroupArmy.index, index);
       return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
@@ -107,14 +107,13 @@ console.log('Ratio:', this.landRatio());
 console.log('Vanguard: ', this.vanguard);
 
 
-
-      // Expand early game
-      if(game.turn < 100){ return this.attacks.expand(true); } //expand
       // emergency defend if nessesary
       let enemyNearestBase = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToBase)[0];
       if(enemyNearestBase && this.pathFinder.distanceTo(enemyNearestBase.index, game.BASE) <= this.intruderRange){
         return this.moveLargestArmyTo(enemyNearestBase.index);
       }
+      // Expand early game
+      if(game.turn < 100){ return this.attacks.expand(true); } //expand
       // Defense as top priority?
       if(game.turn > 150 && !this.areWeDefended()){
         return this.moveLargestArmyTo(game.BASE);
@@ -163,7 +162,9 @@ console.log('Vanguard: ', this.vanguard);
         // Advance the Vanguard
         if(this.vanguard.armies > 1){
           let nearest = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToIndex(this.vanguard.index))[0];
-          return new Move(this.vanguard.index, nearest.index, (new Date().getTime()) - this.started);
+          let next = this.pathFinder.fastest(this.vanguard.index, nearest.index)
+          this.vanguard.index = next.index;
+          return new Move(this.vanguard.index, next.index, (new Date().getTime()) - this.started);
         }
 
         // Final fallback (regroup)
