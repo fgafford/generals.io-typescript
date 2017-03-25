@@ -10,7 +10,7 @@ export default class Recruit implements bot {
   // if enemy inside this range make attacking them top priority
   private intruderRange = 7;
   // minimum lands before we expand no further
-  private minLands = 75;
+  private minLands = 25; // update later
   // minimun ours to their ratio (exand more if we are below a ratio)
   private minLandRatio = 1.15;
 
@@ -63,7 +63,8 @@ export default class Recruit implements bot {
    */
   moveLargestArmyTo(index: number): Move {
       // regroup effors
-      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE, 2, false, this.attacks.largestFirst)[0];
+      let armies = this.attacks.getArmiesWithMinSize(TILE.MINE, 2, false, this.attacks.largestFirst);
+      let regroupArmy = (armies[0].index === this.vanguard.index) ? armies[1] :armies[0];
       let next = this.pathFinder.fastest(regroupArmy.index, index);
       return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
   }
@@ -91,7 +92,7 @@ export default class Recruit implements bot {
       if(!this.pathFinder){ this.setup(game); }
 
       // It was a rout... prepair again
-      if(this.vanguard.armies >= 1 || game.terrain[this.vanguard.index] !== TILE.MINE){
+      if(this.vanguard.armies <= 1 || game.terrain[this.vanguard.index] !== TILE.MINE){
         this.vanguard.index = -1
         this.vanguard.armies = 0
       } else {
@@ -118,13 +119,11 @@ console.log('Vanguard: ', this.vanguard);
       if(game.turn > 150 && !this.areWeDefended()){
         return this.moveLargestArmyTo(game.BASE);
       }
-
-
       // Complete deployment before assuming normal movement
       if(this.deploying){
         // send 1/2 back if needed... 
         if(!this.areWeDefended()){
-          return new Move(this.vanguard.index, game.BASE, (new Date().getTime()) - this.started)
+          return new Move(this.vanguard.index, game.BASE, (new Date().getTime()) - this.started, true) // Final true required
         } else {
           this.deploying = false;
         }
@@ -141,10 +140,11 @@ console.log('Vanguard: ', this.vanguard);
         if(this.game.scores[0].tiles < this.minLands ||
           this.landRatio() < this.minLandRatio)
         {
+    
           let self = this;
           let largestMove = this.moveLargestArmyTo(game.BASE);
           let filter = (army:{index: number}): boolean => {
-            return army.index !== largestMove.from;
+            return army.index !== largestMove.from && army.index !== self.vanguard.index;
           }
 
           let move =  this.attacks.expand(this.areWeDefended(), 2, null, filter); // Expand
@@ -156,6 +156,7 @@ console.log('Vanguard: ', this.vanguard);
           this.deploying = true;
           let next = this.pathFinder.fastest(game.BASE, enemyNearestBase.index);
           this.vanguard.index = next.index;
+          this.vanguard.armies = game.armies[game.BASE]/2
           return new Move(game.BASE, next.index, (new Date().getTime()) - this.started, true); // Final boolean essential here
         }
 
