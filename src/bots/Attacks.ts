@@ -45,6 +45,15 @@ export class Attacks {
     }
   }
 
+  // Functional programming for the win... always
+  nearestToIndex = (goal:number): (a:{index: number, armies: number}, b:{index: number, armies: number}) => number => {
+       return (a:{index: number, armies: number}, b:{index: number, armies: number}): number => {
+                              // Those closest to goal
+                              return this.pathFinder.distanceTo(a.index, goal) - this.pathFinder.distanceTo(b.index, goal)
+                            }
+  }  
+  
+
 
   nearestToBase = (a:{index: number, armies: number}, b:{index: number, armies: number}): number => {
                               // Push the base to the back (last option)

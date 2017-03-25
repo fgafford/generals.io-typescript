@@ -112,9 +112,7 @@ export class Game {
       let move = this.bot.update(this);
       console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
       if(move){
-  console.log(move);
-        
-        this.socket.emit('attack',move.from, move.to)
+        this.socket.emit('attack',move.from, move.to, !!move.half)
         console.log("Thinking: ", move.elapse, "ms");
       } else {
         console.log("Invalid move returned from Bot");

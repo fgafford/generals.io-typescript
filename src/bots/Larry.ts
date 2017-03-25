@@ -14,6 +14,12 @@ export default class Recruit implements bot {
   // minimun ours to their ratio (exand more if we are below a ratio)
   private minLandRatio = 1.15;
 
+  // index of our attacking front (vanguard)
+  private vanguard:{index:number, armies:number} = {index:-1, armies: 0};
+  // are we in the process of moving troops off base to attack?
+  private deploying:boolean = false;
+
+
   private pathFinder: PathFinder;
   private attacks: Attacks;
   private turn: number;
@@ -84,16 +90,44 @@ export default class Recruit implements bot {
 
       if(!this.pathFinder){ this.setup(game); }
 
+      // It was a rout... prepair again
+      if(this.vanguard.armies >= 1 || game.terrain[this.vanguard.index] !== TILE.MINE){
+        this.vanguard.index = -1
+        this.vanguard.armies = 0
+      } else {
+        this.vanguard.armies = game.armies[this.vanguard.index];
+      }
+
+
 console.log('Defense:', this.defense);
 console.log('Enemy:', this.enemyMaxStrength);
-console.log('safe:', this.areWeDefended());
+console.log('Safe:', this.areWeDefended());
+console.log('Ratio:', this.landRatio());
+console.log('Vanguard: ', this.vanguard);
+
+
 
       // Expand early game
       if(game.turn < 100){ return this.attacks.expand(true); } //expand
       // emergency defend if nessesary
-      let nearestEnemy = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToBase)[0];
-      if(nearestEnemy && this.pathFinder.distanceTo(nearestEnemy.index, game.BASE) <= this.intruderRange){
-        return this.moveLargestArmyTo(nearestEnemy.index);
+      let enemyNearestBase = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToBase)[0];
+      if(enemyNearestBase && this.pathFinder.distanceTo(enemyNearestBase.index, game.BASE) <= this.intruderRange){
+        return this.moveLargestArmyTo(enemyNearestBase.index);
+      }
+      // Defense as top priority?
+      if(game.turn > 150 && !this.areWeDefended()){
+        return this.moveLargestArmyTo(game.BASE);
+      }
+
+
+      // Complete deployment before assuming normal movement
+      if(this.deploying){
+        // send 1/2 back if needed... 
+        if(!this.areWeDefended()){
+          return new Move(this.vanguard.index, game.BASE, (new Date().getTime()) - this.started)
+        } else {
+          this.deploying = false;
+        }
       }
 
 
@@ -117,7 +151,22 @@ console.log('safe:', this.areWeDefended());
           return move ? move : largestMove;
         }
 
-        return null;
+        // Deploy the Vanguard
+        if(this.vanguard.index === -1 && this.areWeDefended() && enemyNearestBase){
+          this.deploying = true;
+          let next = this.pathFinder.fastest(game.BASE, enemyNearestBase.index);
+          this.vanguard.index = next.index;
+          return new Move(game.BASE, next.index, (new Date().getTime()) - this.started, true); // Final boolean essential here
+        }
+
+        // Advance the Vanguard
+        if(this.vanguard.armies > 1){
+          let nearest = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToIndex(this.vanguard.index))[0];
+          return new Move(this.vanguard.index, nearest.index, (new Date().getTime()) - this.started);
+        }
+
+        // Final fallback (regroup)
+        return this.moveLargestArmyTo(game.BASE);
       }
   }
 
