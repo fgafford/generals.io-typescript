@@ -110,12 +110,18 @@ export class Game {
     } else {
       // TODO: send to the bot here
       let move = this.bot.update(this);
-      this.socket.emit('attack',move.from, move.to)
-
-      // log time elapse
       console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
+      if(move){
+  console.log(move);
+        
+        this.socket.emit('attack',move.from, move.to)
+        console.log("Thinking: ", move.elapse, "ms");
+      } else {
+        console.log("Invalid move returned from Bot");
+      }
+      
+      // log time elapse
       console.log("Total:", (new Date().getTime() - moveTimer), "ms");
-      console.log("Thinking: ", move.elapse, "ms");
       this.print();      
     }
 

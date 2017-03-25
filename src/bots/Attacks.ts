@@ -92,12 +92,19 @@ export class Attacks {
    * @param {boolean} [useBase=false] - allow for moves from base (headquorters)
    * @param {number} [minArmies=2] - only attack from Tiles with at least X armies  
    * @param {function} [sort=largest] - Optional custom sort function for selecting army to move
+   * @param {function} [sort=largest] - Optional custom sort function for selecting army to move
+   * 
+   * @return {Move} The expand move or NULL if not valid expand move exists
    */
-  public expand(useBase: boolean = true, minArmies: number = 2, sort?:(a:{index: number, armies: number}, b:{index: number, armies: number}) => number): Move {
+  public expand(useBase: boolean = true, minArmies: number = 2, 
+    sort?:(a:{index: number, armies: number}, b:{index: number, armies: number}) => number, 
+    filter?:(army:{index: number, armies: number})=>boolean): Move 
+  {
     let started = (new Date().getTime());
     
     let armies = this.getArmiesWithMinSize(TILE.MINE, minArmies, useBase);
 
+    if(filter){ armies = armies.filter(filter); }
     let ordered = armies.sort(sort || this.nearestToEmpty);
     let choosen = ordered[0]
 
@@ -108,7 +115,7 @@ export class Attacks {
       return new Move(choosen.index,next.index,(new Date().getTime() - started))
     }
 
-    return new Move(0,0,(new Date().getTime() - started))
+    return null;
   }
 
   /**

@@ -14,6 +14,8 @@ export default class Recruit implements bot {
   private maxStrength: number;
   private enemyMaxStrength: number;
   private scout: number = -1;
+  private game: Game;
+  private started: number;
 
   constructor(){}
 
@@ -41,33 +43,52 @@ export default class Recruit implements bot {
    */
   maxTurnLandBonus(): number { return Math.floor((this.turn+1)/ 50) }
 
+  largestToBase(): Move {
+      // regroup effors
+      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE,2, false, this.attacks.largestFirst)[0];
+      let next = this.pathFinder.fastest(regroupArmy.index, this.game.BASE);
+      return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
+  }
+
 
   /**
    * The meet of the bot
    */
   update(game: Game): Move {
-      let timer = new Date().getTime();
+      this.started = new Date().getTime();
 
+      this.game = game;
       let move: Move = new Move(0,0,0);
       let odd: boolean = !!(game.turn % 2);
       this.defense = game.armies[game.BASE];
       this.maxStrength = game.scores[0].total - game.scores[0].tiles;
       this.enemyMaxStrength = game.scores[1].total - game.scores[1].tiles;
 
-console.log('D:', this.defense);
-console.log('E:', this.enemyMaxStrength);
-console.log('safe:', this.areWeDefended());
-
-
-
-
       if(!this.pathFinder){ this.setup(game); }
 
-      if(1 /*odd*/){
-        return this.attacks.expand(this.areWeDefended()); // Expand
-      } else {
+      
+console.log('Defense:', this.defense);
+console.log('Enemy:', this.enemyMaxStrength);
+console.log('safe:', this.areWeDefended());
 
+      if(game.turn < 100){ return this.attacks.expand(true); } //expand
+
+      if(odd){
+        // regroup effors
+        return this.largestToBase();
+      } else {
+        // attack efforts
+        let self = this;
+
+        let largestMove = this.largestToBase();
+        let filter = (army:{index: number}): boolean => {
+          return army.index !== largestMove.from;
+        }
+
+        let move =  this.attacks.expand(this.areWeDefended(), 2, null, filter); // Expand
+        return move ? move : largestMove;
       }
+
 
 
       // if(game.turn > 100 && game.turn < 150){ 
