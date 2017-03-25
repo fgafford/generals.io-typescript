@@ -189,6 +189,11 @@ describe("Pathfinder", () => {
           let game = new Game({}, {}, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', map.terrain)
+            simple.mock(game, 'armies',  [0,0,0,0,0,
+                                          0,0,0,0,0,
+                                          0,0,0,0,0,
+                                          0,0,0,0,0,
+                                          0,0,0,0,0])
             simple.mock(game, 'BASE', map.BASE)
             simple.mock(game, 'cities', map.cities || [])
         
@@ -198,6 +203,60 @@ describe("Pathfinder", () => {
           expect(move.distance).to.equal(0);
           expect(move.index).to.equal(game.BASE);
         })
+
+        it('should perfer paths with great ally armies if same distance away', () => {
+          let map = miniMap;
+          // Mock game object here...
+          let game = new Game({}, {}, true)
+            simple.mock(game, 'width', map.width)
+            simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
+                                           0, 0, 0, 0, 0,
+                                           0,-2,-2,-2, 0,                                      
+                                           0, 0, 0, 0, 0,
+                                          -1,-1,-1,-1,-1,])
+            simple.mock(game, 'armies',  [-1,-1,-1,-1,-1,
+                                           1, 1, 1, 1, 1,
+                                           1,-1,-1,-1, 5,                                      
+                                           2, 2, 2, 2, 2,
+                                          -1,-1,-1,-1,-1,])
+            simple.mock(game, 'BASE', 10)
+            simple.mock(game, 'cities', [])
+
+          let pf = new PathFinder(game);
+          pf.buildPath(game.BASE)
+
+          let move = pf.fastest(14,game.BASE);
+
+          expect(move.index).to.equal(19);
+          // pf.print(game.BASE);
+        })
+
+        it('should perfer allies over enemy tiles if same distance away', () => {
+          let map = miniMap;
+          // Mock game object here...
+          let game = new Game({}, {}, true)
+            simple.mock(game, 'width', map.width)
+            simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
+                                           0, 0, 0, 0, 0,
+                                           0,-2,-2,-2, 0,                                      
+                                           1, 1, 1, 1, 1,
+                                          -1,-1,-1,-1,-1,])
+            simple.mock(game, 'armies',  [-1,-1,-1,-1,-1,
+                                           1, 1, 1, 1, 1,
+                                           1,-1,-1,-1, 5,                                      
+                                           2, 2, 2, 2, 2,
+                                          -1,-1,-1,-1,-1,])
+            simple.mock(game, 'BASE', 10)
+            simple.mock(game, 'cities', [])
+
+          let pf = new PathFinder(game);
+          pf.buildPath(game.BASE)
+
+          let move = pf.fastest(14,game.BASE);
+
+          expect(move.index).to.equal(9);
+        })
+        
     })
 
     /**

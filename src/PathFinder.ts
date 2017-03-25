@@ -46,10 +46,29 @@ export class PathFinder {
      * @param to - index of goal
      */
     public fastest(from: number, to: number):{index: number, distance: number} {
-        var moves =  this.allMoves(from, to)
-                    .sort((a,b) => a.distance - b.distance);
-        
-        return moves[0]
+        var self = this;
+        return this.allMoves(from, to)
+                    .sort((a,b) => {
+                        // Go by distance first
+                        let distDiff = a.distance - b.distance;
+                        if(distDiff !== 0){
+                            return distDiff;
+                        }
+                        // Go by owner then
+                        let aOwner = self.game.terrain[a.index]
+                        let bOwner = self.game.terrain[b.index]
+                        if(aOwner !== bOwner){
+                            return aOwner - bOwner
+                        }
+                        // if we own them 
+                        let aArmies = self.game.armies[a.index]
+                        let bArmies = self.game.armies[b.index]
+                        if(aOwner === TILE.MINE && bOwner === TILE.MINE){
+                            return bArmies - aArmies // return the highest
+                        } else {
+                            return aArmies - bArmies; // return the lowest
+                        }
+                    })[0];
     }
 
     /**
