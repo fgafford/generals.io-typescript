@@ -7,6 +7,9 @@ import { PathFinder } from '../PathFinder'
 
 export default class Recruit implements bot {
 
+  // if enemy inside this range make attacking them top priority
+  private intruderRange = 7;
+
   private pathFinder: PathFinder;
   private attacks: Attacks;
   private turn: number;
@@ -43,10 +46,10 @@ export default class Recruit implements bot {
    */
   maxTurnLandBonus(): number { return Math.floor((this.turn+1)/ 50) }
 
-  largestToBase(): Move {
+  moveLargestArmyTo(index: number): Move {
       // regroup effors
-      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE,2, false, this.attacks.largestFirst)[0];
-      let next = this.pathFinder.fastest(regroupArmy.index, this.game.BASE);
+      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE, 2, false, this.attacks.largestFirst)[0];
+      let next = this.pathFinder.fastest(regroupArmy.index, index);
       return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
   }
 
@@ -66,21 +69,28 @@ export default class Recruit implements bot {
 
       if(!this.pathFinder){ this.setup(game); }
 
-      
 console.log('Defense:', this.defense);
 console.log('Enemy:', this.enemyMaxStrength);
 console.log('safe:', this.areWeDefended());
 
+      // Expand early game
       if(game.turn < 100){ return this.attacks.expand(true); } //expand
+      // emergency defend if nessesary
+      let nearestEnemy = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToBase)[0];
+      if(nearestEnemy && this.pathFinder.distanceTo(nearestEnemy.index, game.BASE) <= this.intruderRange){
+        return this.moveLargestArmyTo(nearestEnemy.index);
+      }
 
+
+      // Regular moves 
       if(odd){
         // regroup effors
-        return this.largestToBase();
+        return this.moveLargestArmyTo(game.BASE);
       } else {
         // attack efforts
         let self = this;
 
-        let largestMove = this.largestToBase();
+        let largestMove = this.moveLargestArmyTo(game.BASE);
         let filter = (army:{index: number}): boolean => {
           return army.index !== largestMove.from;
         }
@@ -88,22 +98,6 @@ console.log('safe:', this.areWeDefended());
         let move =  this.attacks.expand(this.areWeDefended(), 2, null, filter); // Expand
         return move ? move : largestMove;
       }
-
-
-
-      // if(game.turn > 100 && game.turn < 150){ 
-      //   let move =  this.attacks.regroup();
-      //   if(move) { return move; }
-      // }
-
-      // let enemies = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 0, false, this.attacks.nearestToBase);
-
-      // if(enemies.length > 1){
-      //   let army = this.attacks.getArmiesWithMinSize().sort(this.attacks.nearestToBase)[0]
-      //   return this.attacks.regroup(enemies[0].index, 15);  
-      // } else {
-      //   return this.attacks.expand(game.turn < 90); // Expand
-      // }
   }
 
   setup(game: Game): void {
