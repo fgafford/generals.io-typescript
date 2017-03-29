@@ -15,10 +15,7 @@ export default class Recruit implements bot {
   private minLandRatio = 1.15;
 
   // index of our attacking front (vanguard)
-  private vanguard:{index:number, armies:number} = {index:-1, armies: 0};
-  // are we in the process of moving troops off base to attack?
-  private deploying:boolean = false;
-
+  private vanguard:{index:number, armies:number, deploying: boolean} = {index:-1, armies: 0, deploying: false};
 
   private pathFinder: PathFinder;
   private attacks: Attacks;
@@ -45,7 +42,7 @@ export default class Recruit implements bot {
     } else if(this.maxTurnLandBonus() < 5 ){ 
       minPercent = .75 
     } else {
-      minPercent = .5
+      minPercent = .6
     }
     // Are we above the minimum defence?
     return ((this.defense / this.enemyMaxStrength) > minPercent);
@@ -63,8 +60,10 @@ export default class Recruit implements bot {
    */
   moveLargestArmyTo(index: number): Move {
       // regroup effors
-      let armies = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst);
-      let regroupArmy = (armies[0].index === this.vanguard.index) ? armies[1] :armies[0];
+      let self = this;
+      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst)
+                                  .filter(army => army.index !== self.vanguard.index)[0];
+      // let regroupArmy = (armies[0].index === self.vanguard.index) ? armies[1] :armies[0];
       let next = this.pathFinder.fastest(regroupArmy.index, index);
       return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
   }
@@ -92,10 +91,12 @@ export default class Recruit implements bot {
       if(!this.pathFinder){ this.setup(game); }
 
       // It was a rout... prepair again
-      if(this.vanguard.armies <= 1 || game.terrain[this.vanguard.index] !== TILE.MINE){
-        this.vanguard.index = -1
-        this.vanguard.armies = 0
+      if(this.vanguard.armies <= 2 || game.terrain[this.vanguard.index] !== TILE.MINE){
+  console.log('reset vanguard')
+        this.vanguard = {index: -1, armies: 0, deploying: false};
       } else {
+  console.log('update vanguard army count');
+  
         this.vanguard.armies = game.armies[this.vanguard.index];
       }
 
@@ -119,12 +120,14 @@ console.log('Vanguard: ', this.vanguard);
         return this.moveLargestArmyTo(game.BASE);
       }
       // Complete deployment before assuming normal movement
-      if(this.deploying){
+      if(this.vanguard.deploying){
         // send 1/2 back if needed... 
         if(!this.areWeDefended()){
+  console.log('vanguard go base');
+    
           return new Move(this.vanguard.index, game.BASE, (new Date().getTime()) - this.started, true) // Final true required
         } else {
-          this.deploying = false;
+          this.vanguard.deploying = false;
         }
       }
 
@@ -151,20 +154,30 @@ console.log('Vanguard: ', this.vanguard);
         }
 
         // Deploy the Vanguard
-        if(this.vanguard.index === -1 && this.areWeDefended() && enemyNearestBase){
-          this.deploying = true;
+        if(this.vanguard.index === -1 && this.areWeDefended() && enemyNearestBase){  
+          this.vanguard.deploying = true;
           let next = this.pathFinder.fastest(game.BASE, enemyNearestBase.index);
           this.vanguard.index = next.index;
           this.vanguard.armies = game.armies[game.BASE]/2
+    console.log('deploy the vanguard');
+    console.log('vanguard: ', this.vanguard);
+    
           return new Move(game.BASE, next.index, (new Date().getTime()) - this.started, true); // Final boolean essential here
         }
 
         // Advance the Vanguard
-        if(this.vanguard.armies > 1){
+        if(this.vanguard.armies > 2){
           let nearest = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToIndex(this.vanguard.index))[0];
           let next = this.pathFinder.fastest(this.vanguard.index, nearest.index)
+  console.log('advance the vanguard');
+  console.log('next:', next);
+  console.log('vanguard:', this.vanguard);
+  
+          let move = new Move(this.vanguard.index, next.index, (new Date().getTime()) - this.started);
+          // update index after creating move
           this.vanguard.index = next.index;
-          return new Move(this.vanguard.index, next.index, (new Date().getTime()) - this.started);
+          return move
+
         }
 
         // Final fallback (regroup)

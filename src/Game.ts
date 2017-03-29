@@ -98,6 +98,9 @@ export class Game {
     // terrain[0] is the top-left corner of the map.
     this.terrain = this.map.slice(this.size + 2, this.size + 2 + this.size);
 
+    // display the game board
+    this.print();   
+
     // save the location of our base
     if(data.turn === 1){
       this.BASE = this.generals.filter( c => c > 0)[0];
@@ -113,14 +116,15 @@ export class Game {
       console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
       if(move){
         this.socket.emit('attack',move.from, move.to, !!move.half)
+    console.log('move:', move);
+    
         console.log("Thinking: ", move.elapse, "ms");
       } else {
         console.log("Invalid move returned from Bot");
       }
       
       // log time elapse
-      console.log("Total:", (new Date().getTime() - moveTimer), "ms");
-      this.print();      
+      console.log("Total:", (new Date().getTime() - moveTimer), "ms");   
     }
 
   }
