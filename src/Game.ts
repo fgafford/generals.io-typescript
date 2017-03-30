@@ -111,20 +111,22 @@ export class Game {
       this.size = this.width * this.height;
       
     } else {
-      // TODO: send to the bot here
-      let move = this.bot.update(this);
-      console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
-      if(move){
-        this.socket.emit('attack',move.from, move.to, !!move.half)
-    console.log('move:', move);
-    
-        console.log("Thinking: ", move.elapse, "ms");
-      } else {
-        console.log("Invalid move returned from Bot");
-      }
+      try{
+        let move = this.bot.update(this);
+        console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
+        if(move){
+          this.socket.emit('attack',move.from, move.to, !!move.half)
       
-      // log time elapse
-      console.log("Total:", (new Date().getTime() - moveTimer), "ms");   
+          console.log("Thinking: ", move.elapse, "ms");
+        } else {
+          console.log("Invalid move returned from Bot");
+        }
+        
+        // log time elapse
+        console.log("Total:", (new Date().getTime() - moveTimer), "ms");  
+      } catch(err){
+        console.log('Bot fail: ', err);
+      }
     }
 
   }
@@ -178,6 +180,7 @@ export class Game {
    * @return {[type]}       [description]
    */
   public print = (move?: Move): void => {
+        console.log('==========================================================================');
         let key = {
             [TILE.EMPTY]: ' ',
             [TILE.MINE]: color.yellow('+'),
@@ -213,7 +216,6 @@ export class Game {
             }
             console.log(out + '}');
         }
-        console.log('==========================================================================');
     }
 
 }

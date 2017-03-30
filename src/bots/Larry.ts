@@ -8,11 +8,11 @@ import { PathFinder } from '../PathFinder'
 export default class Recruit implements bot {
 
   // if enemy inside this range make attacking them top priority
-  private intruderRange = 7;
+  private intruderRange = 3;
   // minimum lands before we expand no further
   private minLands = 25; // update later
   // minimun ours to their ratio (exand more if we are below a ratio)
-  private minLandRatio = 1.15;
+  private minLandRatio = 1.2;
 
   // index of our attacking front (vanguard)
   private vanguard:{index:number, armies:number, deploying: boolean} = {index:-1, armies: 0, deploying: false};
