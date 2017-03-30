@@ -180,6 +180,7 @@ export class Game {
    * @return {[type]}       [description]
    */
   public print = (move?: Move): void => {
+        let self = this;
         console.log('==========================================================================');
         let key = {
             [TILE.EMPTY]: ' ',
@@ -188,6 +189,17 @@ export class Game {
             [TILE.MOUNTAIN]: color.gray('M'),
             [TILE.OBSTACLE]: color.cyan('?') 
         };
+
+        function terrainColor(index: number, text: string): string{
+          let terrain = self.terrain[index];
+
+          if(terrain === -1){ return color.gray(text); }
+          if(terrain === TILE.MINE){ return color.yellow(text); }
+          if(terrain  > 0){ return color.red(text); }
+          
+          return color.gray(text);
+        }
+
         for (var i = 0; i < this.terrain.length; i += this.width) {
             var out: string = '{';
             let row = this.terrain.slice(i, i + this.width);
@@ -197,22 +209,17 @@ export class Game {
                 let printRow = color.gray('[');
 
                 if(armyRow[j] > 0){
-                    printRow += armyRow[j] > 99 ? 
-                                color.green(armyRow[j]) :
-                                armyRow[j] > 9 ? 
-                                 ' ' + color.green(armyRow[j]) : 
-                                 ' ' + color.green(armyRow[j]) + ' ';
+                    printRow += terrainColor(i+j, 
+                                            (armyRow[j] > 99 ? 
+                                              armyRow[j] + '' :
+                                              armyRow[j] > 9 ? 
+                                                ' ' + armyRow[j] : 
+                                                ' ' + armyRow[j] + ' '));
                 } else {
                     printRow += ' ' + key[row[j]] + ' ';
                 }
 
-                // print indexes
-                // let pad = '   '
-                // let num = (i+j).toString();
-                // printRow += pad.substring(0, pad.length - num.length) + num 
-
                 out += printRow + color.gray(']');
-
             }
             console.log(out + '}');
         }
