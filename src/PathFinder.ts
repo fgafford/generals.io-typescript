@@ -26,7 +26,7 @@ export class PathFinder {
 // Array["prototype"].randomItem = function(): any {
 //     return this[Math.floor(Math.random()*this.length)];
 // }
-    private randomItem<T>(arr: T[]): T {
+    public randomItem<T>(arr: T[]): T {
         return arr[Math.floor(Math.random()*arr.length)];
     }
 

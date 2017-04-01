@@ -73,6 +73,25 @@ export default class Recruit implements bot {
   }
 
   /**
+   * Get one of the largest army at random. A randomly selected army should
+   * eventually pull a greater percentage of armies back to base.
+   * 
+   * @param index - end goal
+   */
+  randomLargestArmy(index: number): Move {
+     // regroup effors
+      let self = this;
+      let canidates = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst)
+                                  .filter((army, i, arr) => {
+                                    return army.armies >= arr[1].armies && // Vanguard is likey first in list
+                                            army.index !== self.vanguard.index
+                                  });
+      let regroupArmy = this.pathFinder.randomItem(canidates);
+      let next = this.pathFinder.fastest(regroupArmy.index, index);
+      return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
+  }
+
+  /**
    * The ratio of allied lands to enemy lands
    */
   landRatio(): number {
@@ -95,10 +114,9 @@ export default class Recruit implements bot {
       if(!this.pathFinder){ this.setup(game); }
 
       // It was a rout... prepair again
+      this.vanguard.armies = game.armies[this.vanguard.index] || 0;
       if(this.vanguard.index !== -1 && (this.vanguard.armies <= 2 || game.terrain[this.vanguard.index] !== TILE.MINE)){
         this.vanguard = {index: -1, armies: 0, deploying: false};
-      } else {
-        this.vanguard.armies = game.armies[this.vanguard.index];
       }
 
       console.log('Defense:', this.defense);
@@ -108,7 +126,16 @@ export default class Recruit implements bot {
       console.log('Vanguard: ', this.vanguard);
       console.log('maxTurnBonus: ', this.maxTurnLandBonus());
       
-
+      // Complete Vanguard deployment before assuming normal movement
+      if(this.vanguard.deploying){
+        // send 1/2 back if needed... 
+        if(!this.areWeDefended()){
+          console.log('vanguard go base');
+          return new Move(this.vanguard.index, game.BASE, (new Date().getTime()) - this.started, true) // Final true required
+        } else {
+          this.vanguard.deploying = false;
+        }
+      }
 
       // Defense as top priority?
       if(!this.areWeDefended()){
@@ -122,22 +149,11 @@ export default class Recruit implements bot {
       // Expand early game
       if(game.turn < 100){ return this.attacks.expand(true); } //expand
 
-      // Complete Vanguard deployment before assuming normal movement
-      if(this.vanguard.deploying){
-        // send 1/2 back if needed... 
-        if(!this.areWeDefended()){
-          console.log('vanguard go base');
-          return new Move(this.vanguard.index, game.BASE, (new Date().getTime()) - this.started, true) // Final true required
-        } else {
-          this.vanguard.deploying = false;
-        }
-      }
-
 
       // Regular moves 
       if(odd){
         // regroup effors
-        return this.moveLargestArmyTo(game.BASE);
+        return this.randomLargestArmy(game.BASE);
       } else {
   
         // attack efforts
@@ -146,12 +162,13 @@ export default class Recruit implements bot {
         {
     
           let self = this;
-          let largestMove = this.moveLargestArmyTo(game.BASE);
+          let largestMove = this.randomLargestArmy(game.BASE)
           let filter = (army:{index: number}): boolean => {
             return army.index !== largestMove.from && army.index !== self.vanguard.index;
           }
 
           let move =  this.attacks.expand(this.areWeDefended(), 2, null, filter); // Expand
+          if(this.maxTurnLandBonus() > 1){ move.half = true; }
           return move ? move : largestMove;
         }
 
@@ -183,7 +200,7 @@ export default class Recruit implements bot {
         }
 
         // Final fallback (regroup)
-        return this.moveLargestArmyTo(game.BASE);
+        return this.randomLargestArmy(game.BASE);
       }
   }
 
