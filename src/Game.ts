@@ -16,7 +16,9 @@ const color = require('colors');
  */
 export class Game {
 
-  private playerSettings: any;
+  private user_id: string;
+  private botName: string;
+  private room: string;
   private bot: bot;
 
   private socket: SocketIOClient.Socket = io('http://botws.generals.io')
@@ -38,47 +40,47 @@ export class Game {
 
   // private botConfig;
 
-  constructor(gameSettings: any, player: any, testing = false){
+  constructor(user_id: string, room: string, bot: bot, botName: string, testing = false){
     if(!testing){
-      let botImpl = require(`./bots/${gameSettings.botName}`)['default'];  
-      this.bot = new botImpl();
+      this.user_id = user_id;
+      this.room = room;
+      this.botName = botName; 
+      this.bot = bot;
 
       // setup listening handlers
-      this.setupListeners(this.socket, gameSettings, player);
+      this.setupListeners(this.socket);
     }
   }
 
-  setupListeners = (socket: SocketIOClient.Socket, gameSettings: any, player: any ): void => {
+  setupListeners = (socket: SocketIOClient.Socket): void => {
     this.socket.on('connect', () => {
-      this.socket.emit('set_username', player.user_id, gameSettings.botName);
+      this.socket.emit('set_username', this.user_id, this.botName);
       console.log('Connected to server.');
 
-      this.socket.emit('join_private', gameSettings.gameName, player.user_id);
-      this.socket.emit('set_force_start', gameSettings.gameName, true);
-      console.log('Joined custom game at http://bot.generals.io/games/' + encodeURIComponent(gameSettings.gameName));
+      switch(this.room){
+        case '1v1':
+          this.socket.emit('join_1v1', this.user_id);
+          console.log('joined 1v1 game room');
+          
+        // TODO: other game types here
+        default:
+          this.socket.emit('join_private', this.room, this.user_id);
+          console.log('Joined custom game at http://bot.generals.io/games/' + encodeURIComponent(this.room));
+      }
+
+      this.socket.emit('set_force_start', this.room, true);
+      
     });
     this.socket.on('game_start', this.game_start);
     this.socket.on('game_update', this.update);
     this.socket.on('disconnect', this.disconnect);
-  }
+    this.socket.on('game_won', this.won)
+    this.socket.on('game_lost', this.lost);
 
-  public col(index: number): number{
-    return index % this.width;
+    this.socket.on('error_set_username', (err: string)  => {
+      if(err.length){ console.log('Username issue:', err);}
+    });
   }
-
-  public row(index: number): number{
-    return Math.floor(index / this.width)
-  }
-/*
-  public up = (tile: number): {terrain: number; armies: number; index: number; } => {
-    let row = Math.floor(tile / this.width);
-    return {
-      terrain: row === 1 ? TILE.MOUNTAIN : this.terrain[tile - this.width],
-      armies: row === 1 ? TILE.MOUNTAIN : this.armies[tile - this.width],
-      index: tile - this.width
-    };
-  }
-*/
 
   private update = (data: any): void => {
     let moveTimer = new Date().getTime();
@@ -104,7 +106,7 @@ export class Game {
     // save the location of our base
     if(data.turn === 1){
       this.BASE = this.generals.filter( c => c > 0)[0];
-  console.log("BASE:", this.BASE);
+      console.log("BASE:", this.BASE);
       // The first two terms in |map| are the dimensions.
       this.width = this.map[0];
       this.height = this.map[1];
@@ -116,7 +118,7 @@ export class Game {
         console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
         if(move){
           this.socket.emit('attack',move.from, move.to, !!move.half)
-      
+          console.log('Move:', move);      
           console.log("Thinking: ", move.elapse, "ms");
         } else {
           console.log("Invalid move returned from Bot");
@@ -171,6 +173,16 @@ export class Game {
     process.exit(1);
   }
 
+  won(data: any){
+    console.log('Win! Defeted: ', data);
+    process.exit(1);
+  }
+
+  lost(data: any){
+    console.log('Lose. Defeated by: ', data);
+    process.exit(1);
+  }
+
   /**
    * Pretty print either the armies or terrain array
    *
@@ -209,12 +221,16 @@ export class Game {
                 let printRow = color.gray('[');
 
                 if(armyRow[j] > 0){
-                    printRow += terrainColor(i+j, 
-                                            (armyRow[j] > 99 ? 
-                                              armyRow[j] + '' :
-                                              armyRow[j] > 9 ? 
-                                                ' ' + armyRow[j] : 
-                                                ' ' + armyRow[j] + ' '));
+                    if(armyRow[j] === undefined){
+                      printRow += '   ';
+                    } else {
+                      printRow += terrainColor(i+j, 
+                                              (armyRow[j] > 99 ? 
+                                                armyRow[j] + '' :
+                                                armyRow[j] > 9 ? 
+                                                  ' ' + armyRow[j] : 
+                                                  ' ' + armyRow[j] + ' '));
+                    }
                 } else {
                     printRow += ' ' + key[row[j]] + ' ';
                 }

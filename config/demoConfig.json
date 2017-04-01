@@ -1,0 +1,28 @@
+{
+  "apps" : [
+  // Test
+  {
+    "name"        : "Demo",
+    "script"      : "./lib/src/Commander.js",
+    "env": {
+      "user_id": "myUserId",
+      "bot_name": "[Bot] Demo Bot",
+      "room": "Demo_room",
+      "file": "./bot/demo.js"
+    }
+  },
+  // Prod
+  {
+    "name"       : "Demo",
+    "script"     : "./lib/src/Commander.js",
+    "instances"  : 4,
+    "exec_mode"  : "cluster",
+    "env": {
+      "user_id": "myUserId",
+      "bot_name": "[Bot] Demo Bot",
+      "room": "Demo_room",
+      "file": "./bot/demo.js"
+    }
+  }]
+}
+
