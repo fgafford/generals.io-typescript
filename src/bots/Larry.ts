@@ -36,6 +36,7 @@ export default class Recruit implements bot {
    * maxEnemyStrength
    */
   areWeDefended(): boolean {
+    if(this.maxStrength < this.enemyMaxStrength){ return true; }
     if(this.defense > this.enemyMaxStrength){ return true; }
 
     let minPercent = 1;
@@ -165,7 +166,7 @@ export default class Recruit implements bot {
       }
 
       // Defense as top priority?
-      if(this.maxTurnLandBonus() > 5 && !this.areWeDefended()){ this.defendWithLargest(); }
+      if(!this.areWeDefended()){ this.defendWithLargest(); }
       // emergency defend if nessesary
       let enemyNearestBase = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToBase)[0];
       if(enemyNearestBase && this.pathFinder.distanceTo(enemyNearestBase.index, game.BASE) <= this.intruderRange){
@@ -210,13 +211,6 @@ export default class Recruit implements bot {
         if(this.vanguard.armies > 2){
           let nearest = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToIndex(this.vanguard.index))[0];
           return this.moveVanguardTowards(nearest.index);
-          // let next = this.pathFinder.fastest(this.vanguard.index, nearest.index)
-  
-          // let move = new Move(this.vanguard.index, next.index, (new Date().getTime()) - this.started);
-          // // update index after creating move
-          // this.vanguard.index = next.index;
-          // return move
-
         }
 
         // Final fallback (regroup)
