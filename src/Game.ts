@@ -25,7 +25,7 @@ export class Game {
 
   private socket: SocketIOClient.Socket = io('http://botws.generals.io')
 
-  // public playerIndex: number;
+  private requireCoolDown: boolean = false;
   public playerIndex: number;
   public generals: Array<number>;
   public turn: number;
@@ -62,6 +62,7 @@ export class Game {
 
       switch(this.room){
         case '1v1':
+          this.requireCoolDown = true;
           this.socket.emit('join_1v1', this.user_id);
           console.log('joined 1v1 game room');
           
@@ -192,17 +193,17 @@ export class Game {
 
   disconnect(){
     console.error('Disconnected from server.');
-    process.exit(1);
+    this.requireCoolDown ? this.coolDown() : process.exit(1);
   }
 
   won(data: any){
     console.log('Win! Defeted: ', data);
-    process.exit(1);
+    this.requireCoolDown ? this.coolDown() : process.exit(1);
   }
 
   lost(data: any){
     console.log('Lose. Defeated by: ', data);
-    process.exit(1);
+    this.requireCoolDown ? this.coolDown() : process.exit(1);
   }
 
   /**
@@ -261,6 +262,15 @@ export class Game {
             }
             console.log(out + '}');
         }
+    }
+
+    private getRandomInt = (min: number, max: number): number =>  {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    private coolDown = (): void => {
+      var mins = this.getRandomInt(2,10) * 1000 /*seconds*/ * 60 /*minutes*/ 
+      setTimeout(() => process.exit(1), mins);
     }
 
 }

@@ -283,7 +283,7 @@ export class PathFinder {
                               if(b.index === this.game.BASE) return -1;
                               // Those closest to base
                               return this.distanceTo(a.index, this.game.BASE) - this.distanceTo(b.index, this.game.BASE)
-}
+    }
 
     furthestFromBase = (a:{index: number, armies: number}, b:{index: number, armies: number}): number => {
                                 // Push the base to the back (last option)

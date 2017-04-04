@@ -115,10 +115,11 @@ export default class Curly implements bot {
         return this.pathFinder.expand(true, 2, this.pathFinder.nearestToBase);
       } 
 
-      let generals = game.generals
-                          .slice() // Copy the array
-                          .splice(game.playerIndex,1) // remove us from it
-                          .filter(c => c > -1)
+
+      let generals = game.generals.slice(0) // Copy the array
+      generals.splice(game.playerIndex,1) // remove us from it
+      generals = generals.filter(c => c > -1)
+
 
       if(generals.length){
         return this.moveLargestArmyTo(generals[0]);
