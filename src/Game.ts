@@ -4,7 +4,7 @@ import { TILE } from "./GameConstants";
 import { bot } from "./bots/bot"
 import { Move } from './Move'
 
-let playerIndex: number;
+
 
 const color = require('colors');
 // import { GameSettings } from "../config/gameSettings";
@@ -26,6 +26,7 @@ export class Game {
   private socket: SocketIOClient.Socket = io('http://botws.generals.io')
 
   // public playerIndex: number;
+  public playerIndex: number;
   public generals: Array<number>;
   public turn: number;
   public cities: Array<number>;
@@ -87,8 +88,8 @@ export class Game {
   // Should really set the type here at some point
   game_start(data: any){    
     console.log('replay_url:','http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id));
-    playerIndex = data.playerIndex;
-    console.log('PlayerIndex:', playerIndex);
+    this.playerIndex = data.playerIndex;
+    console.log('PlayerIndex:', this.playerIndex);
     
   }
 
@@ -102,7 +103,6 @@ export class Game {
     // Patch the city and map diffs into our local variables.
     this.cities = this.patch(this.cities, data.cities_diff);
     this.map = this.patch(this.map, data.map_diff);
-    this.generals = data.generals;
     this.scores = data.scores;
 
     // The next |size| terms are army values.
@@ -118,14 +118,29 @@ export class Game {
 
     // save the location of our base
     if(data.turn === 1){
-      this.BASE = data.generals[playerIndex];
+      if(this.playerIndex === undefined){
+        for(let i = 0; i< data.generals.length ; i++){
+          if(data.generals[i] > -1 ){ this.playerIndex = i; }
+        }
+      }
+      this.generals = data.generals;
+
+      this.BASE = data.generals[this.playerIndex];
       console.log("BASE:", this.BASE);
+
       // The first two terms in |map| are the dimensions.
       this.width = this.map[0];
       this.height = this.map[1];
       this.size = this.width * this.height;
       
     } else {
+      // Update generals here
+      this.generals = this.generals.map((g, i) => {
+        return data.generals[i] === -1 ?
+              g :
+              data.generals[i];
+      });
+
       try{
         let move = this.bot.update(this);
         console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
