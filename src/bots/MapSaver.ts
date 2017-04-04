@@ -6,6 +6,7 @@ const fs = require('fs')
 
 export default class Recruit implements bot {
 
+  name: string = "MapSaver";
   constructor(){}
 
   update(game: Game): Move {

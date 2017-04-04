@@ -5,7 +5,7 @@ import { Attacks } from './Attacks';
 import { TILE } from '../GameConstants';
 import { PathFinder } from '../PathFinder'
 
-export default class Curley implements bot {
+export default class Curly implements bot {
 
   // How close is too close
   private intruderRange = 2;
