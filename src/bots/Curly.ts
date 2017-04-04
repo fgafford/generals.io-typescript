@@ -44,11 +44,10 @@ export default class Curly implements bot {
   moveLargestArmyTo(index: number): Move {
       // regroup effors
       let self = this;
-      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst)
-                                  .filter(army => army.index !== self.vanguard.index)[0];
+      let army = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst)[0];
       // let regroupArmy = (armies[0].index === self.vanguard.index) ? armies[1] :armies[0];
-      let next = this.pathFinder.fastest(regroupArmy.index, index);
-      return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
+      let next = this.pathFinder.fastest(army.index, index);
+      return new Move(army.index, next.index, (new Date().getTime()) - this.started);
   }
 
   /**
@@ -56,7 +55,7 @@ export default class Curly implements bot {
    * eventually pull a greater percentage of armies back to base.
    * 
    * @param index - end goal
-   */
+   *
   furthestLargestArmy(index: number): Move {
      // regroup effors
       let self = this;
@@ -70,6 +69,7 @@ export default class Curly implements bot {
       let next = this.pathFinder.fastest(regroupArmy.index, index);
       return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
   }
+  */
 
   /**
    * The ratio of allied lands to enemy lands
@@ -82,13 +82,14 @@ export default class Curly implements bot {
    * Move the vanguard towards the given goal
    * 
    * @param goal - index where Vanguard is headed
-   */
+   *
   moveVanguardTowards(goal: number): Move {
     let next = this.pathFinder.fastest(this.vanguard.index, goal);
     let move = new Move(this.vanguard.index, next.index, (new Date().getTime()) - this.started);
     this.vanguard.index = next.index;
     return move;
   }
+  */
 
   /**
    * The meet of the bot
@@ -108,8 +109,6 @@ export default class Curly implements bot {
       // console.log('Enemy:', this.enemyMaxStrength);
       // console.log('Safe:', this.areWeDefended());
       console.log('Ratio:', this.landRatio());
-      console.log('BASE:', game.BASE);
-      
       // console.log('Vanguard: ', this.vanguard);
       // console.log('maxTurnBonus: ', this.maxTurnLandBonus());
 
@@ -118,8 +117,18 @@ export default class Curly implements bot {
         return this.attacks.expand(true, 2, this.attacks.nearestToBase);
       } 
 
+      let generals = game.generals
+                          .slice() // Copy the array
+                          .splice(game.playerIndex,1) // remove us from it
+                          .filter(c => c > -1)
+
+      if(generals.length){
+        return this.moveLargestArmyTo(generals[0]);
+      }
+      
       if(this.landRatio() < 1){
-        return this.attacks.expand(false, 2, this.attacks.nearestToEmpty)
+        let move = this.attacks.expand(false, 2, this.attacks.nearestToEmpty)
+        if(move){ return move; }
       }
 
       let ememies = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false).length;
