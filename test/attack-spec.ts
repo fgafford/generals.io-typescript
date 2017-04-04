@@ -1,5 +1,4 @@
 
-import { Attacks } from "../src/bots/Attacks";
 import { Game } from '../src/Game'
 import { PathFinder } from '../src/PathFinder'
 import { TILE } from '../src/GameConstants';
@@ -33,9 +32,7 @@ describe("Attacks", () => {
                                              0,0,0])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let indexes = attacks.getArmiesWithMinSize()
+            let indexes = pf.getArmiesWithMinSize()
 
             expect(indexes.length).to.equal(0);
             
@@ -56,9 +53,7 @@ describe("Attacks", () => {
                                              0,0,0])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let indexes = attacks.getArmiesWithMinSize(TILE.MINE, 2, true)
+            let indexes = pf.getArmiesWithMinSize(TILE.MINE, 2, true)
 
             expect(indexes.length).to.equal(1);
             expect(indexes[0].index).to.equal(0);
@@ -80,9 +75,7 @@ describe("Attacks", () => {
                                              3,2,3])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let indexes = attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 2, true)
+            let indexes = pf.getArmiesWithMinSize(TILE.ANY_ENEMY, 2, true)
 
             let expectedIndexes = [6,7,8];
 
@@ -112,9 +105,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let move = attacks.expand()
+            let move = pf.expand()
 
             let acceptableTo = [1,3]
 
@@ -138,9 +129,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let move = attacks.expand()
+            let move = pf.expand()
 
             let acceptableTo = [1,3]
 
@@ -164,9 +153,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let move = attacks.expand()
+            let move = pf.expand()
 
             expect(move.to).to.equal(2);
             expect(move.from).to.equal(1)
@@ -188,9 +175,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let move = attacks.expand(false,2,attacks.largestFirst)
+            let move = pf.expand(false,2, pf.largestFirst)
 
             expect(move.from).to.equal(2)
             expect(move.to).to.equal(5);
@@ -214,9 +199,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let move = attacks.regroup()
+            let move = pf.regroup()
 
             let acceptableTo = [5,7]
 
@@ -240,9 +223,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let move = attacks.regroup(game.BASE,5,3)
+            let move = pf.regroup(game.BASE,5,3)
 
             let acceptableFrom = [5,7]
             let acceptableTo = [2,4,6]
@@ -267,9 +248,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'cities', map.cities || [])
 
             let pf = new PathFinder(game);
-            let attacks = new Attacks(game, pf); 
-
-            let move = attacks.regroup()
+            let move = pf.regroup()
 
             let acceptableTo = [1,3]
 

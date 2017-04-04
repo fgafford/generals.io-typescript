@@ -1,7 +1,6 @@
 import { bot } from './bot';
 import { Move } from '../Move'
 import { Game } from '../Game'
-import { Attacks } from './Attacks';
 import { TILE } from '../GameConstants';
 import { PathFinder } from '../PathFinder'
 
@@ -20,7 +19,6 @@ export default class Curly implements bot {
   private varguardHelpDistance = 10;
 
   private pathFinder: PathFinder;
-  private attacks: Attacks;
   private maxStrength: number;
   private enemyMaxStrength: number;
   private game: Game;
@@ -44,7 +42,7 @@ export default class Curly implements bot {
   moveLargestArmyTo(index: number): Move {
       // regroup effors
       let self = this;
-      let army = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst)[0];
+      let army = this.pathFinder.getArmiesWithMinSize(TILE.MINE, 1, false, this.pathFinder.largestFirst)[0];
       // let regroupArmy = (armies[0].index === self.vanguard.index) ? armies[1] :armies[0];
       let next = this.pathFinder.fastest(army.index, index);
       return new Move(army.index, next.index, (new Date().getTime()) - this.started);
@@ -114,7 +112,7 @@ export default class Curly implements bot {
 
 
       if(this.maxTurnLandBonus() < 2){
-        return this.attacks.expand(true, 2, this.attacks.nearestToBase);
+        return this.pathFinder.expand(true, 2, this.pathFinder.nearestToBase);
       } 
 
       let generals = game.generals
@@ -127,22 +125,21 @@ export default class Curly implements bot {
       }
       
       if(this.landRatio() < 1){
-        let move = this.attacks.expand(false, 2, this.attacks.nearestToEmpty)
+        let move = this.pathFinder.expand(false, 2, this.pathFinder.nearestToEmpty)
         if(move){ return move; }
       }
 
-      let ememies = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false).length;
+      let ememies = this.pathFinder.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false).length;
       if(!!ememies){
-        return this.attacks.expand(false, 2, this.attacks.largestFirst, null, true);
+        return this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
       }
      
       // Fallback -- keep expanding
-      return this.attacks.expand(false, 2, this.attacks.nearestToEmpty)
+      return this.pathFinder.expand(false, 2, this.pathFinder.nearestToEmpty)
   }
 
   setup(game: Game): void {
     this.pathFinder = new PathFinder(game);
-    this.attacks = new Attacks(game, this.pathFinder); 
   }
 
 }

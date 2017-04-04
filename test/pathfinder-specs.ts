@@ -1,5 +1,4 @@
 
-import { Attacks } from "../src/bots/Attacks";
 import { Game } from '../src/Game'
 import { PathFinder } from '../src/PathFinder'
 import { TILE } from '../src/GameConstants';

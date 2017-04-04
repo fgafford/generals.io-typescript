@@ -1,7 +1,6 @@
 import { bot } from './bot';
 import { Move } from '../Move'
 import { Game } from '../Game'
-import { Attacks } from './Attacks';
 import { TILE } from '../GameConstants';
 import { PathFinder } from '../PathFinder'
 
@@ -20,7 +19,6 @@ export default class Larry implements bot {
   private varguardHelpDistance = 10;
 
   private pathFinder: PathFinder;
-  private attacks: Attacks;
   private defense: number;
   private maxStrength: number;
   private enemyMaxStrength: number;
@@ -70,7 +68,7 @@ export default class Larry implements bot {
   moveLargestArmyTo(index: number): Move {
       // regroup effors
       let self = this;
-      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst)
+      let regroupArmy = this.pathFinder.getArmiesWithMinSize(TILE.MINE, 1, false, this.pathFinder.largestFirst)
                                   .filter(army => army.index !== self.vanguard.index)[0];
       // let regroupArmy = (armies[0].index === self.vanguard.index) ? armies[1] :armies[0];
       let next = this.pathFinder.fastest(regroupArmy.index, index);
@@ -86,12 +84,12 @@ export default class Larry implements bot {
   furthestLargestArmy(index: number): Move {
      // regroup effors
       let self = this;
-      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst)
+      let regroupArmy = this.pathFinder.getArmiesWithMinSize(TILE.MINE, 1, false, this.pathFinder.largestFirst)
                                   .filter((army, i, arr) => {
                                     return army.armies >= arr[1].armies && // Vanguard is likey first in list
                                             army.index !== self.vanguard.index
                                   })
-                                  .sort(this.attacks.furthestFromBase)[0];
+                                  .sort(this.pathFinder.furthestFromBase)[0];
       // let regroupArmy = this.pathFinder.randomItem(canidates);
       let next = this.pathFinder.fastest(regroupArmy.index, index);
       return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
@@ -170,12 +168,12 @@ export default class Larry implements bot {
       // Defense as top priority?
       if(!this.areWeDefended()){ this.defendWithLargest(); }
       // emergency defend if nessesary
-      let enemyNearestBase = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToBase)[0];
+      let enemyNearestBase = this.pathFinder.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase)[0];
       if(enemyNearestBase && this.pathFinder.distanceTo(enemyNearestBase.index, game.BASE) <= this.intruderRange){
         return this.moveLargestArmyTo(enemyNearestBase.index);
       }
       // Expand early game
-      if(game.turn < 100){ return this.attacks.expand(true,2, this.attacks.nearestToBase); } //expand
+      if(game.turn < 100){ return this.pathFinder.expand(true,2, this.pathFinder.nearestToBase); } //expand
 
       // Regular moves 
       if(odd){
@@ -194,7 +192,7 @@ export default class Larry implements bot {
             return army.index !== largestMove.from && army.index !== self.vanguard.index;
           }
 
-          let move =  this.attacks.expand(this.areWeDefended(), 2, null, filter); // Expand
+          let move =  this.pathFinder.expand(this.areWeDefended(), 2, null, filter); // Expand
           if(this.maxTurnLandBonus() > 1){ move.half = true; }
           return move ? move : largestMove;
         }
@@ -211,7 +209,7 @@ export default class Larry implements bot {
 
         // Advance the Vanguard
         if(this.vanguard.armies > 2){
-          let nearest = this.attacks.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.attacks.nearestToIndex(this.vanguard.index))[0];
+          let nearest = this.pathFinder.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToIndex(this.vanguard.index))[0];
           return this.moveVanguardTowards(nearest.index);
         }
 
@@ -222,7 +220,6 @@ export default class Larry implements bot {
 
   setup(game: Game): void {
     this.pathFinder = new PathFinder(game);
-    this.attacks = new Attacks(game, this.pathFinder); 
   }
 
 }
