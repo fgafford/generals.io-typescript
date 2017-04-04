@@ -5,7 +5,7 @@ import { Attacks } from './Attacks';
 import { TILE } from '../GameConstants';
 import { PathFinder } from '../PathFinder'
 
-export default class Recruit implements bot {
+export default class Larry implements bot {
 
   // if enemy inside this range make attacking them top priority
   private intruderRange = 2;
@@ -24,11 +24,13 @@ export default class Recruit implements bot {
   private defense: number;
   private maxStrength: number;
   private enemyMaxStrength: number;
-  private scout: number = -1;
   private game: Game;
   private started: number;
+  public name: string;
 
-  constructor(){}
+  constructor(name: string){
+    this.name = name;
+  }
 
   /**
    * Return true or false as to if 

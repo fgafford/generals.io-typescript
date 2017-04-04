@@ -4,6 +4,8 @@ import { TILE } from "./GameConstants";
 import { bot } from "./bots/bot"
 import { Move } from './Move'
 
+let playerIndex: number;
+
 const color = require('colors');
 // import { GameSettings } from "../config/gameSettings";
 
@@ -23,7 +25,7 @@ export class Game {
 
   private socket: SocketIOClient.Socket = io('http://botws.generals.io')
 
-  public playerIndex: number;
+  // public playerIndex: number;
   public generals: Array<number>;
   public turn: number;
   public cities: Array<number>;
@@ -40,11 +42,11 @@ export class Game {
 
   // private botConfig;
 
-  constructor(user_id: string, room: string, bot: bot, botName: string, testing = false){
+  constructor(user_id: string, room: string, bot: bot, testing = false){
     if(!testing){
       this.user_id = user_id;
       this.room = room;
-      this.botName = botName; 
+      this.botName = bot.name; 
       this.bot = bot;
 
       // setup listening handlers
@@ -82,6 +84,17 @@ export class Game {
     });
   }
 
+  // Should really set the type here at some point
+  game_start(data: any){    
+    console.log('replay_url:','http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id));
+    playerIndex = data.playerIndex;
+    console.log('PlayerIndex:', playerIndex);
+    
+  }
+
+  /**
+   * 
+   */
   private update = (data: any): void => {
     let moveTimer = new Date().getTime();
 
@@ -105,7 +118,7 @@ export class Game {
 
     // save the location of our base
     if(data.turn === 1){
-      this.BASE = this.generals.filter( c => c > 0)[0];
+      this.BASE = data.generals[playerIndex];
       console.log("BASE:", this.BASE);
       // The first two terms in |map| are the dimensions.
       this.width = this.map[0];
@@ -160,12 +173,6 @@ export class Game {
       i++;
     }
     return out;
-  }
-
-  // Should really set the type here at some point
-  game_start(data: any){
-    this.playerIndex = data.playerIndex;
-    console.log('replay_url:','http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id));
   }
 
   disconnect(){

@@ -11,7 +11,7 @@ let room = process.env.room || 'fgafford_DOJO';
 let fileName = process.env.file;
 
 let botImpl = require(fileName)['default'];  
-let bot = new botImpl();
+let bot = new botImpl(botName);
 
-new Game(user_id, room, bot, botName);
+new Game(user_id, room, bot);
 
