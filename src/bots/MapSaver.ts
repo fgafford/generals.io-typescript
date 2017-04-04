@@ -4,7 +4,7 @@ import { Game } from '../Game'
 import { Attacks } from './Attacks';
 const fs = require('fs')
 
-export default class Recruit implements bot {
+export default class MapSaver implements bot {
 
   name: string = "MapSaver";
   constructor(){}

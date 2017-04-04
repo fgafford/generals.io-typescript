@@ -3,12 +3,14 @@ import { Attacks } from "../src/bots/Attacks";
 import { Game } from '../src/Game'
 import { PathFinder } from '../src/PathFinder'
 import { TILE } from '../src/GameConstants';
+import { MockBot } from '../src/bots/mockBot'
 
 import * as chai from "chai";
 const simple = require('simple-mock')
 const expect = chai.expect;
 
 describe("Pathfinder", () => {
+    const mockBot = new MockBot();
     const microMap = require('./maps/3x3')
     const miniMap = require('./maps/5x5')
     const map1 = require('./maps/map1')
@@ -19,7 +21,7 @@ describe("Pathfinder", () => {
     it('should not error building all paths', () => {
       let map = microMap;
       // Mock game object here...
-      let game = new Game({}, {}, true)
+      let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', map.width)
         simple.mock(game, 'terrain', map.terrain)
         simple.mock(game, 'BASE', map.BASE)
@@ -34,7 +36,7 @@ describe("Pathfinder", () => {
     it('does not include visibile cities (as of now)', () => {
       let map = miniMap;
       // Mock game object here...
-      let game = new Game({}, {}, true)
+      let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', map.width)
         simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
                                       -1,-1,-1,-1,-1,
@@ -60,7 +62,7 @@ describe("Pathfinder", () => {
     it('should not include BASE on another path (for now)', () => {
       let map = microMap;
       // Mock game object here...
-      let game = new Game({}, {}, true)
+      let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', map.width)
         simple.mock(game, 'terrain', map.terrain)
         simple.mock(game, 'BASE', map.BASE)
@@ -82,7 +84,7 @@ describe("Pathfinder", () => {
     describe('getSurroundingIndexes', () => {
 
       it('should have 4 correct indexes at range 1', () => {
-        let game = new Game({}, {}, true)
+      let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
         simple.mock(game, 'cities', [])
@@ -98,7 +100,7 @@ describe("Pathfinder", () => {
       })
 
       it('should only return one quadrent when it bottom right corner', () => {
-        let game = new Game({}, {}, true)
+        let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
         simple.mock(game, 'cities', [])
@@ -112,7 +114,7 @@ describe("Pathfinder", () => {
       })
 
       it('should only return one quadrent when it top left', () => {
-        let game = new Game({}, {}, true)
+        let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
         simple.mock(game, 'cities', [])
@@ -127,7 +129,7 @@ describe("Pathfinder", () => {
       })
 
       it('should not spill indexes over to the right side when on the left', () => {
-        let game = new Game({}, {}, true)
+        let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
         simple.mock(game, 'cities', [])
@@ -149,7 +151,7 @@ describe("Pathfinder", () => {
       it('should return 4 moves when in middle of map', () => {
         const map = miniMap;
         // Mock game object here...
-        let game = new Game({}, {}, true)
+        let game = new Game('', '', mockBot, true)
           simple.mock(game, 'width', map.width)
           simple.mock(game, 'terrain', map.terrain)
           simple.mock(game, 'BASE', map.BASE)
@@ -166,7 +168,7 @@ describe("Pathfinder", () => {
       it('should return 2 moves in corner of map', () => {
         const map = miniMap;
         // Mock game object here...
-        let game = new Game({}, {}, true)
+        let game = new Game('', '', mockBot, true)
           simple.mock(game, 'width', map.width)
           simple.mock(game, 'terrain', map.terrain)
           simple.mock(game, 'BASE', map.BASE)
@@ -186,7 +188,7 @@ describe("Pathfinder", () => {
         it('should return move to go when 1 away', () => {
           const map = miniMap;
           // Mock game object here...
-          let game = new Game({}, {}, true)
+          let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', map.terrain)
             simple.mock(game, 'armies',  [0,0,0,0,0,
@@ -207,7 +209,7 @@ describe("Pathfinder", () => {
         it('should perfer paths with great ally armies if same distance away', () => {
           let map = miniMap;
           // Mock game object here...
-          let game = new Game({}, {}, true)
+          let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
                                            0, 0, 0, 0, 0,
@@ -234,7 +236,7 @@ describe("Pathfinder", () => {
         it('should perfer allies over enemy tiles if same distance away', () => {
           let map = miniMap;
           // Mock game object here...
-          let game = new Game({}, {}, true)
+          let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
                                            0, 0, 0, 0, 0,
@@ -266,7 +268,7 @@ describe("Pathfinder", () => {
       it('should return all surrounding matches', () => {
           const map = microMap;
           // Mock game object here...
-          let game = new Game({}, {}, true)
+          let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', map.terrain)
             simple.mock(game, 'BASE', map.BASE)
@@ -284,7 +286,7 @@ describe("Pathfinder", () => {
       it('should not return surrounding tiles that do not match', () => {
           const map = microMap;
           // Mock game object here...
-          let game = new Game({}, {}, true)
+          let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', [0,0,0,
                                           0,0,0,
@@ -301,7 +303,7 @@ describe("Pathfinder", () => {
       it('should only return the nearest match', () => {
           const map = microMap;
           // Mock game object here...
-          let game = new Game({}, {}, true)
+          let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', [0,0,0,
                                           0,0,0,
@@ -318,7 +320,7 @@ describe("Pathfinder", () => {
       it('should show the proper distance to the match', () => {
           const map = microMap;
           // Mock game object here...
-          let game = new Game({}, {}, true)
+          let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', [0,0,0,
                                           0,0,0,
@@ -335,7 +337,7 @@ describe("Pathfinder", () => {
       it('should default to attack any army', () => {
           const map = microMap;
           // Mock game object here...
-          let game = new Game({}, {}, true)
+          let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', [0,0,0,
                                           0,0,-1,

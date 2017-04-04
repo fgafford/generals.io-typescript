@@ -3,6 +3,9 @@ import { Attacks } from "../src/bots/Attacks";
 import { Game } from '../src/Game'
 import { PathFinder } from '../src/PathFinder'
 import { TILE } from '../src/GameConstants';
+import { Move } from '../src/Move'
+import { MockBot } from '../src/bots/mockBot'
+
 import * as chai from "chai";
 // import * as simple from 'simple-mock'
 const simple = require('simple-mock')
@@ -12,12 +15,13 @@ const expect = chai.expect;
 describe("Attacks", () => {
     const microMap = require('./maps/3x3')
     const miniMap = require('./maps/5x5')
+    const mockBot = new MockBot();
 
     describe('getArmiesWithMinSize', () => {
         it('should not use base by default', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -40,7 +44,7 @@ describe("Attacks", () => {
         it('should use base when specified', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -64,7 +68,7 @@ describe("Attacks", () => {
         it('should be able to find enemy armies', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -95,7 +99,7 @@ describe("Attacks", () => {
         it('should move off base by default', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -121,7 +125,7 @@ describe("Attacks", () => {
         it('should goto the nearest empty when boardering', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -147,7 +151,7 @@ describe("Attacks", () => {
         it('should select an army that is bordering an empty (default)', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -171,7 +175,7 @@ describe("Attacks", () => {
         it('should use largest army when using alternate sort', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -197,7 +201,7 @@ describe("Attacks", () => {
         it('should pull from the army at furthest distance first', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -223,7 +227,7 @@ describe("Attacks", () => {
         it('should pass by armies that are lower then the minimum', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
@@ -250,7 +254,7 @@ describe("Attacks", () => {
         it('should only pull from our armies', () => {
             let map = microMap;
             // Mock game object here...
-            let game = new Game({}, {}, true)
+            let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
