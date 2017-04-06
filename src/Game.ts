@@ -22,6 +22,7 @@ export class Game {
   private botName: string;
   private room: string;
   private bot: bot;
+  private gameId: string;
 
   private socket: SocketIOClient.Socket = io('http://botws.generals.io')
 
@@ -89,6 +90,7 @@ export class Game {
   // Should really set the type here at some point
   game_start(data: any){    
     console.log('replay_url:','http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id));
+    this.gameId = data.replay_id;
     this.playerIndex = data.playerIndex;
     console.log('PlayerIndex:', this.playerIndex);
     
@@ -157,7 +159,7 @@ export class Game {
         // log time elapse
         console.log("Total:", (new Date().getTime() - moveTimer), "ms");  
       } catch(err){
-        console.log('Bot fail: ', err);
+        console.error(`[${this.gameId}] Bot Error:`, err);
       }
     }
 
@@ -192,8 +194,8 @@ export class Game {
     return out;
   }
 
-  disconnect(){
-    console.error('Disconnected from server.');
+  disconnect(err: string){
+    console.error(`[${this.gameId}] Disconnected from server:`, err);
     this.requireCoolDown ? this.coolDown() : process.exit(1);
   }
 
