@@ -92,12 +92,11 @@ export default class Curly implements bot {
   /**
    * The meet of the bot
    */
-  update(game: Game): Move {
+  update(game: Game, updateDate: any): Move {
       if(!this.pathFinder){ this.setup(game); }
       this.started = new Date().getTime();
 
       this.game = game;
-      let move: Move = new Move(0,0,0);
       let odd: boolean = !!(game.turn % 2);
       // this.maxStrength = game.scores[0].total - game.scores[0].tiles;
       // this.enemyMaxStrength = game.scores[1].total - game.scores[1].tiles;
@@ -109,11 +108,19 @@ export default class Curly implements bot {
       console.log('Ratio:', this.landRatio());
       // console.log('Vanguard: ', this.vanguard);
       // console.log('maxTurnBonus: ', this.maxTurnLandBonus());
-
+      console.log('cities diff:', updateDate.cities_diff);
 
       if(this.maxTurnLandBonus() < 2){
-        return this.pathFinder.expand(true, 2, this.pathFinder.nearestToBase);
+        let move = this.pathFinder.expand(true, 2, this.pathFinder.nearestToBase);
+        if(move){ return move; }
       } 
+
+      if(game.turn === 100){ // 50 'full' game turns
+        this.pathFinder = new PathFinder(game, true); // now we will attack cities!
+        this.pathFinder.buildAllPaths();
+      }
+      // rebuild when finding new cities
+      if(updateDate.cities_diff.length > 1){ this.pathFinder.buildAllPaths(); }
 
 
       let generals = game.generals.slice(0) // Copy the array
@@ -134,9 +141,26 @@ export default class Curly implements bot {
       if(!!ememies){
         return this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
       }
-     
-      // Fallback -- keep expanding
-      return this.pathFinder.expand(false, 2, this.pathFinder.nearestToEmpty)
+
+      // Attack nerest city
+      var targets = game.cities
+                  .filter(c => game.terrain[c] === TILE.EMPTY)
+                  .map(c => { 
+                    return {
+                      index: c,
+                      strength: game.armies[c],
+                      distanceFromBase: this.pathFinder.distanceTo(c, game.BASE)
+                    }
+                  })
+                  .sort((a,b) => a.distanceFromBase - b.distanceFromBase);
+
+      if(targets.length){
+        let move =  this.moveLargestArmyTo(targets[0].index);
+        if(move) { return move; } 
+      }
+
+      // Keep expanding if no enemies found
+      this.pathFinder.expand(false, 2, this.pathFinder.largestFirst)
   }
 
   setup(game: Game): void {

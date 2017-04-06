@@ -32,7 +32,33 @@ describe("Pathfinder", () => {
       // pf.print(game.BASE);
     })
 
-    it('does not include visibile cities (as of now)', () => {
+    it('does not include visibile cities by default', () => {
+      let map = miniMap;
+      // Mock game object here...
+      let game = new Game('', '', mockBot, true)
+        simple.mock(game, 'width', map.width)
+        simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
+                                      -1,-1,-1,-1,-1,
+                                      -1, 0, 0,-1,-1,                                      
+                                      -1,-1,-1,-1,-1,
+                                      -1,-1,-1,-1,-1,])
+        simple.mock(game, 'armies',  [-1,-1,-1,-1,-1,
+                                      -1,-1,-1,-1,-1,
+                                      -1,45, 1,-1,-1,                                      
+                                      -1,-1,-1,-1,-1,
+                                      -1,-1,-1,-1,-1,])
+        simple.mock(game, 'BASE', 12)
+        simple.mock(game, 'cities', [11])
+
+      let pf = new PathFinder(game);
+      pf.buildPath(game.BASE)
+
+      expect(pf.distanceTo(10, game.BASE)).to.equal(4);
+
+      // pf.print(game.BASE);  
+    })
+
+    it('should include visibile cities if set to', () => {
       let map = miniMap;
       // Mock game object here...
       let game = new Game('', '', mockBot, true)
@@ -47,13 +73,13 @@ describe("Pathfinder", () => {
                                       -1, 45,1,-1,-1,                                      
                                       -1,-1,-1,-1,-1,
                                       -1,-1,-1,-1,-1,])
-        simple.mock(game, 'BASE', map.BASE)
+        simple.mock(game, 'BASE', 12)
         simple.mock(game, 'cities', [11])
 
-      let pf = new PathFinder(game);
+      let pf = new PathFinder(game, true);
       pf.buildPath(game.BASE)
 
-      expect(pf.distanceTo(10,game.BASE)).to.equal(4);
+      expect(pf.distanceTo(10,game.BASE)).to.equal(2);
 
       // pf.print(game.BASE);
     })

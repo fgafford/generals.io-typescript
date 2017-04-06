@@ -8,6 +8,7 @@ const color = require('colors');
 
 export class PathFinder {
     private game: Game;
+    private includeCities: boolean;
     private terrain: Array<number>;
     private paths: Array<Array<number>> = [];
 
@@ -15,11 +16,14 @@ export class PathFinder {
 
     /**
      * @constructor
-     * @param game - current game object
+     * 
+     * @param {Game} game - current game object
+     * @param {boolean} [includeCities = false] - Should cities be included on paths?
      */
-    constructor(game: Game){
+    constructor(game: Game, includeCities: boolean = false){
         this.game = game;
         this.terrain = game.terrain.slice(0);
+        this.includeCities = includeCities;
     }
 
 // Broken in Typesctipt compiler
@@ -105,7 +109,7 @@ export class PathFinder {
      * These paths do NOT take into account cities (allied, enemy, or neutral)
      * and does not take into account enemy or allied armies.
      */
-    public buildAllPaths(){
+    public buildAllPaths(){        
         let clock = new Date().getTime();
 
         for(let i = 0; i < this.terrain.length; i++){
@@ -147,7 +151,8 @@ export class PathFinder {
                     if(path[index] === undefined && 
                        this.terrain[index] !== TILE.OBSTACLE && 
                        this.terrain[index] !== TILE.MOUNTAIN && 
-                       !~this.game.cities.indexOf(index) && 
+                       // include cities if requested
+                       (this.includeCities ? true : !~this.game.cities.indexOf(index)) && 
                        // if index is BASE and isBasePath then add
                        (index === this.game.BASE ? isBasePath : true))
                     {
@@ -345,6 +350,7 @@ export class PathFinder {
 
         if(choosen){
             let nearest = this.getNearest(choosen.index, (attack ? TILE.ANY_ENEMY : TILE.EMPTY))
+            if(!nearest) { return null; } //TODO: really invetigate this at some point
             let next = this.fastest(choosen.index, nearest.index)
             // update the elapse timer
             return new Move(choosen.index,next.index,(new Date().getTime() - started))

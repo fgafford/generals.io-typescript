@@ -106,6 +106,7 @@ export class Game {
     this.map = this.patch(this.map, data.map_diff);
     this.scores = data.scores;
 
+
     // The next |size| terms are army values.
     // armies[0] is the top-left corner of the map.
     this.armies = this.map.slice(2, this.size + 2);
@@ -143,7 +144,7 @@ export class Game {
       });
 
       try{
-        let move = this.bot.update(this);
+        let move = this.bot.update(this, data);
         console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
         if(move){
           this.socket.emit('attack',move.from, move.to, !!move.half)

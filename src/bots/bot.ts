@@ -5,6 +5,6 @@ export interface bot {
   [x: string]: any;
   // new(name: string): void;
   name: string;
-  update(game: Game): Move;
+  update(game: Game, updateData: any): Move;
 
 }
