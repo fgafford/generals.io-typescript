@@ -272,8 +272,9 @@ export class Game {
     }
 
     private coolDown = (): void => {
-      var mins = this.getRandomInt(2,10) * 1000 /*seconds*/ * 60 /*minutes*/ 
-      setTimeout(() => process.exit(1), mins);
+//      var mins = this.getRandomInt(2,10) * 1000 /*seconds*/ * 60 /*minutes*/ 
+//      setTimeout(() => process.exit(1), mins);
+        process.exit(1);
     }
 
 }
