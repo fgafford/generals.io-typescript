@@ -137,9 +137,11 @@ export default class Curly implements bot {
         if(move){ return move; }
       }
 
-      let ememies = this.pathFinder.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false).length;
-      if(!!ememies){
-        return this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
+      let enemies = this.pathFinder.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.pathFinder.furthestFromBase);
+      if(enemies.length){
+        // Try attacking the enemy furhtest from Base
+        return this.moveLargestArmyTo(enemies[0].index);
+        // return this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
       }
 
       // Attack nerest city
