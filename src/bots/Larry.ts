@@ -1,7 +1,6 @@
 import { bot } from './bot';
 import { Move } from '../Move'
 import { Game } from '../Game'
-import { TILE } from '../GameConstants';
 import { PathFinder } from '../PathFinder'
 
 export default class Larry implements bot {
@@ -68,7 +67,7 @@ export default class Larry implements bot {
   moveLargestArmyTo(index: number): Move {
       // regroup effors
       let self = this;
-      let regroupArmy = this.pathFinder.getArmiesWithMinSize(TILE.MINE, 1, false, this.pathFinder.largestFirst)
+      let regroupArmy = this.pathFinder.getArmiesWithMinSize(this.game.TILE.MINE, 1, false, this.pathFinder.largestFirst)
                                   .filter(army => army.index !== self.vanguard.index)[0];
       // let regroupArmy = (armies[0].index === self.vanguard.index) ? armies[1] :armies[0];
       let next = this.pathFinder.fastest(regroupArmy.index, index);
@@ -84,7 +83,7 @@ export default class Larry implements bot {
   furthestLargestArmy(index: number): Move {
      // regroup effors
       let self = this;
-      let regroupArmy = this.pathFinder.getArmiesWithMinSize(TILE.MINE, 1, false, this.pathFinder.largestFirst)
+      let regroupArmy = this.pathFinder.getArmiesWithMinSize(this.game.TILE.MINE, 1, false, this.pathFinder.largestFirst)
                                   .filter((army, i, arr) => {
                                     return army.armies >= arr[1].armies && // Vanguard is likey first in list
                                             army.index !== self.vanguard.index
@@ -143,7 +142,7 @@ export default class Larry implements bot {
  
       // It was a rout... prepair again
       this.vanguard.armies = game.armies[this.vanguard.index] || 0;
-      if(this.vanguard.index !== -1 && (this.vanguard.armies <= 2 || game.terrain[this.vanguard.index] !== TILE.MINE)){
+      if(this.vanguard.index !== -1 && (this.vanguard.armies <= 2 || game.terrain[this.vanguard.index] !== this.game.TILE.MINE)){
         this.vanguard = {index: -1, armies: 0, deploying: false};
       }
 
@@ -168,7 +167,7 @@ export default class Larry implements bot {
       // Defense as top priority?
       if(!this.areWeDefended()){ this.defendWithLargest(); }
       // emergency defend if nessesary
-      let enemyNearestBase = this.pathFinder.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase)[0];
+      let enemyNearestBase = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase)[0];
       if(enemyNearestBase && this.pathFinder.distanceTo(enemyNearestBase.index, game.BASE) <= this.intruderRange){
         return this.moveLargestArmyTo(enemyNearestBase.index);
       }
@@ -209,7 +208,7 @@ export default class Larry implements bot {
 
         // Advance the Vanguard
         if(this.vanguard.armies > 2){
-          let nearest = this.pathFinder.getArmiesWithMinSize(TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToIndex(this.vanguard.index))[0];
+          let nearest = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToIndex(this.vanguard.index))[0];
           return this.moveVanguardTowards(nearest.index);
         }
 

@@ -1,4 +1,4 @@
-import { TILE } from "./GameConstants";
+
 import { Move } from './Move'
 import { Game } from './Game'
 
@@ -12,8 +12,6 @@ export class PathFinder {
     private terrain: Array<number>;
     private paths: Array<Array<number>> = [];
 
-
-
     /**
      * @constructor
      * 
@@ -21,7 +19,7 @@ export class PathFinder {
      * @param {boolean} [includeCities = false] - Should cities be included on paths?
      */
     constructor(game: Game, includeCities: boolean = false){
-        this.game = game;
+        this.game = game
         this.terrain = game.terrain.slice(0);
         this.includeCities = includeCities;
     }
@@ -67,7 +65,7 @@ export class PathFinder {
                         // if we own them 
                         let aArmies = self.game.armies[a.index]
                         let bArmies = self.game.armies[b.index]
-                        if(aOwner === TILE.MINE && bOwner === TILE.MINE){
+                        if(aOwner === self.game.TILE.MINE && bOwner === self.game.TILE.MINE){
                             return bArmies - aArmies // return the highest
                         } else {
                             return aArmies - bArmies; // return the lowest
@@ -149,8 +147,8 @@ export class PathFinder {
                     // ins[j] = space to get new count (count+1)
                     let index = ins[j];
                     if(path[index] === undefined && 
-                       this.terrain[index] !== TILE.OBSTACLE && 
-                       this.terrain[index] !== TILE.MOUNTAIN && 
+                       this.terrain[index] !== this.game.TILE.OBSTACLE && 
+                       this.terrain[index] !== this.game.TILE.MOUNTAIN && 
                        // include cities if requested
                        (this.includeCities ? true : !~this.game.cities.indexOf(index)) && 
                        // if index is BASE and isBasePath then add
@@ -188,7 +186,7 @@ export class PathFinder {
     /**
      * get the index of the nearest tile with the matching terrain type
      */
-    public getNearest(from: number, terrain = TILE.ANY_ENEMY): {index: number, distance: number}{
+    public getNearest(from: number, terrain = this.game.TILE.ANY_ENEMY): {index: number, distance: number}{
         let indexes:Array<{index: number, distance: number}> = [];
         let i = 1;
         while(this.getIndexesAtMovesAway(from,i).length){
@@ -196,8 +194,9 @@ export class PathFinder {
             let ins = this.getIndexesAtMovesAway(from,i);
             
             for(let j = 0; j < ins.length; j++){ 
-                if((terrain === TILE.ANY_ENEMY &&
-                    this.game.terrain[ins[j]] > 0) ||
+                if((terrain === this.game.TILE.ANY_ENEMY &&
+                    this.game.terrain[ins[j]] >= 0 &&
+                    this.game.terrain[ins[j]] !== this.game.TILE.MINE) ||
                     this.game.terrain[ins[j]] === terrain)
                 { 
                     indexes.push({
@@ -247,7 +246,7 @@ export class PathFinder {
      * Loops through and gets all the indexes with armies at a given or larger size
      */
     public getArmiesWithMinSize(
-            type: number = TILE.MINE,
+            type: number = this.game.TILE.MINE,
             min: number = 2, 
             includeBase: boolean = false, 
             sort?:(a:{index: number, armies: number}, b:{index: number, armies: number}) => number): Array<{index: number, armies: number}> 
@@ -257,9 +256,11 @@ export class PathFinder {
 
         // find biggest army and move to 0
         for(let i = 0; i < this.game.terrain.length; i++){
-            if((type === TILE.ANY_ENEMY ? 
-                (this.game.terrain[i] >= 1) : 
+            if((type === this.game.TILE.ANY_ENEMY ? 
+                (this.game.terrain[i] >= 0 && 
+                    this.game.terrain[i] !== this.game.TILE.MINE) : 
                 (this.game.terrain[i] === type)) && 
+                
             this.game.armies[i] >= min && 
             (includeBase ? true : i !== this.game.BASE)) 
             { 
@@ -307,8 +308,8 @@ export class PathFinder {
                                 }
 
     nearestToEmpty = (a:{index: number, armies: number}, b:{index: number, armies: number}): number => {
-                                let aDist = this.getNearest(a.index, TILE.EMPTY).distance;
-                                let bDist = this.getNearest(b.index, TILE.EMPTY).distance;
+                                let aDist = this.getNearest(a.index, this.game.TILE.EMPTY).distance;
+                                let bDist = this.getNearest(b.index, this.game.TILE.EMPTY).distance;
                                 // put largest armies at the front
                                 return aDist - bDist;
                             }
@@ -342,14 +343,14 @@ export class PathFinder {
     {
         let started = (new Date().getTime());
         
-        let armies = this.getArmiesWithMinSize(TILE.MINE, minArmies, useBase);
+        let armies = this.getArmiesWithMinSize(this.game.TILE.MINE, minArmies, useBase);
 
         if(filter){ armies = armies.filter(filter); }
         let ordered = armies.sort(sort || this.nearestToEmpty);
         let choosen = ordered[0]
 
         if(choosen){
-            let nearest = this.getNearest(choosen.index, (attack ? TILE.ANY_ENEMY : TILE.EMPTY))
+            let nearest = this.getNearest(choosen.index, (attack ? this.game.TILE.ANY_ENEMY : this.game.TILE.EMPTY))
             if(!nearest) { return null; } //TODO: really invetigate this at some point
             let next = this.fastest(choosen.index, nearest.index)
             // update the elapse timer
@@ -374,7 +375,7 @@ export class PathFinder {
         let indexesAtDistance = this.getIndexesAtMovesAway(goal, d);
 
         for(let i of indexesAtDistance){
-            if(this.game.terrain[i] === TILE.MINE && this.game.armies[i] >= minArmies){
+            if(this.game.terrain[i] === this.game.TILE.MINE && this.game.armies[i] >= minArmies){
             // get the move from that index to the goal
             return new Move(i, 
                     this.fastest(i, goal).index, 
@@ -392,11 +393,11 @@ export class PathFinder {
      */
     public print(goal: number): void {
         let key = {
-            [TILE.EMPTY]: ' ',
-            [TILE.MINE]: color.yellow('+'),
-            [TILE.FOG]: color.gray('~'),
-            [TILE.MOUNTAIN]: color.gray('M'),
-            [TILE.OBSTACLE]: color.red('%') 
+            [this.game.TILE.EMPTY]: ' ',
+            [this.game.TILE.MINE]: color.yellow('+'),
+            [this.game.TILE.FOG]: color.gray('~'),
+            [this.game.TILE.MOUNTAIN]: color.gray('M'),
+            [this.game.TILE.OBSTACLE]: color.red('%') 
         };
         for (var i = 0; i < this.game.terrain.length; i += this.game.width) {
             var out: string = '{';

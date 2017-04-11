@@ -1,6 +1,5 @@
  // /// <reference path="../lib/node6.d.ts" />
 import * as io from "socket.io-client";
-import { TILE } from "./GameConstants";
 import { bot } from "./bots/bot"
 import { Move } from './Move'
 
@@ -41,6 +40,15 @@ export class Game {
   public width: number;
   public height: number;
   public size: number;
+
+  public TILE = {
+    MINE: -1, // Set on game start 
+    EMPTY: -1,
+    MOUNTAIN: -2,
+    FOG: -3,
+    OBSTACLE: -4,
+    ANY_ENEMY: 100
+  };
 
   // private botConfig;
 
@@ -89,15 +97,19 @@ export class Game {
 
   // Should really set the type here at some point
   game_start(data: any){    
+    console.log('=== Start game data ===');
+    console.log(data);
+
     console.log('replay_url:','http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id));
     this.gameId = data.replay_id;
     this.playerIndex = data.playerIndex;
     console.log('PlayerIndex:', this.playerIndex);
-    
   }
 
   /**
+   * The game loop
    * 
+   * Here is where the real work happens
    */
   private update = (data: any): void => {
     let moveTimer = new Date().getTime();
@@ -119,6 +131,7 @@ export class Game {
 
     // display the game board
     this.print();   
+    
 
     // save the location of our base
     if(data.turn === 1){
@@ -127,8 +140,9 @@ export class Game {
           if(data.generals[i] > -1 ){ this.playerIndex = i; }
         }
       }
+      // Set our tiles
+      this.TILE.MINE = this.playerIndex;
       this.generals = data.generals;
-
       this.BASE = data.generals[this.playerIndex];
       console.log("BASE:", this.BASE);
 
@@ -153,13 +167,15 @@ export class Game {
           console.log('Move:', move);      
           console.log("Thinking: ", move.elapse, "ms");
         } else {
-          console.log("Invalid move returned from Bot");
+          console.error("Invalid move:", move);
+          this.debug();
         }
-        
+
         // log time elapse
         console.log("Total:", (new Date().getTime() - moveTimer), "ms");  
       } catch(err){
         console.error(`[${this.gameId}] Bot Error:`, err);
+        this.debug();
       }
     }
 
@@ -221,18 +237,18 @@ export class Game {
         let self = this;
         console.log('==========================================================================');
         let key = {
-            [TILE.EMPTY]: ' ',
-            [TILE.MINE]: color.yellow('+'),
-            [TILE.FOG]: color.gray('~'),
-            [TILE.MOUNTAIN]: color.gray('M'),
-            [TILE.OBSTACLE]: color.cyan('?') 
+            [this.TILE.EMPTY]: ' ',
+            [this.TILE.MINE]: color.yellow('+'),
+            [this.TILE.FOG]: color.gray('~'),
+            [this.TILE.MOUNTAIN]: color.gray('M'),
+            [this.TILE.OBSTACLE]: color.cyan('?') 
         };
 
         function terrainColor(index: number, text: string): string{
           let terrain = self.terrain[index];
 
           if(terrain === -1){ return color.gray(text); }
-          if(terrain === TILE.MINE){ return color.yellow(text); }
+          if(terrain === self.TILE.MINE){ return color.yellow(text); }
           if(terrain  > 0){ return color.red(text); }
           
           return color.gray(text);
@@ -265,6 +281,15 @@ export class Game {
             }
             console.log(out + '}');
         }
+    }
+
+    public debug(){
+      console.error('playerIndex:', this.playerIndex);
+      console.error('BASE:', this.BASE)
+      console.error('generals:', JSON.stringify(this.generals));
+      console.error('armies:', JSON.stringify(this.armies));
+      console.error('terrain:', JSON.stringify(this.terrain));
+      // console.dir(this, {depth: null, colors: true });
     }
 
     private getRandomInt = (min: number, max: number): number =>  {

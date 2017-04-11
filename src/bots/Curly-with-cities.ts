@@ -114,25 +114,54 @@ export default class Curly implements bot {
         if(move){ return move; }
       } 
 
+      if(game.turn === 100){ // 50 'full' game turns
+        this.pathFinder = new PathFinder(game, true); // now we will attack cities!
+        this.pathFinder.buildAllPaths();
+      }
+      // rebuild when finding new cities
+      if(updateDate.cities_diff.length > 1){ this.pathFinder.buildAllPaths(); }
+
+
       let generals = game.generals.slice(0) // Copy the array
       generals.splice(game.playerIndex,1) // remove us from it
       generals = generals.filter(c => c > -1)
 
-      if(generals.length){ return this.moveLargestArmyTo(generals[0]); }
+
+      if(generals.length){
+        return this.moveLargestArmyTo(generals[0]);
+      }
       
-      if(this.landRatio() < 1.1){
+      if(this.landRatio() < 1){
         let move = this.pathFinder.expand(false, 2, this.pathFinder.nearestToEmpty)
         if(move){ return move; }
       }
 
       let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.furthestFromBase);
       if(enemies.length){
-        // Attack nearest enemy
-        return this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
+        // Try attacking the enemy furhtest from Base
+        return this.moveLargestArmyTo(enemies[0].index);
+        // return this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
+      }
+
+      // Attack nerest city
+      var targets = game.cities
+                  .filter(c => game.terrain[c] === this.game.TILE.EMPTY)
+                  .map(c => { 
+                    return {
+                      index: c,
+                      strength: game.armies[c],
+                      distanceFromBase: this.pathFinder.distanceTo(c, game.BASE)
+                    }
+                  })
+                  .sort((a,b) => a.distanceFromBase - b.distanceFromBase);
+
+      if(targets.length){
+        let move =  this.moveLargestArmyTo(targets[0].index);
+        if(move) { return move; } 
       }
 
       // Keep expanding if no enemies found
-      return this.pathFinder.expand(true, 2, this.pathFinder.nearestToEmpty);
+      this.pathFinder.expand(false, 2, this.pathFinder.largestFirst)
   }
 
   setup(game: Game): void {
