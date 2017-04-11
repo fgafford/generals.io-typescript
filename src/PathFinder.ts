@@ -60,7 +60,8 @@ export class PathFinder {
                         let aOwner = self.game.terrain[a.index]
                         let bOwner = self.game.terrain[b.index]
                         if(aOwner !== bOwner){
-                            return aOwner - bOwner
+                            if(aOwner === self.game.TILE.MINE){ return -1 }
+                            if(bOwner === self.game.TILE.MINE){ return 1 }
                         }
                         // if we own them 
                         let aArmies = self.game.armies[a.index]

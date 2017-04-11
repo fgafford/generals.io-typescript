@@ -1,7 +1,6 @@
 
 import { Game } from '../src/Game'
 import { PathFinder } from '../src/PathFinder'
-import { TILE } from '../src/GameConstants';
 import { Move } from '../src/Move'
 import { MockBot } from '../src/bots/mockBot'
 
@@ -15,6 +14,14 @@ describe("Attacks", () => {
     const microMap = require('./maps/3x3')
     const miniMap = require('./maps/5x5')
     const mockBot = new MockBot();
+    const TILE = {
+      MINE: 0, // Assume 0 in default tests
+      EMPTY: -1,
+      MOUNTAIN: -2,
+      FOG: -3,
+      OBSTACLE: -4,
+      ANY_ENEMY: 100
+    };
 
     describe('getArmiesWithMinSize', () => {
         it('should not use base by default', () => {
@@ -24,6 +31,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
+                simple.mock(game, 'TILE', TILE)
                 simple.mock(game,'terrain', [ 0,-1,-1,
                                              -1,-1,-1,
                                              -1,-1,-1])
@@ -45,6 +53,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
+                simple.mock(game, 'TILE', TILE)
                 simple.mock(game,'terrain', [ 0,-1,-1,
                                              -1,-1,-1,
                                              -1,-1,-1])
@@ -53,7 +62,7 @@ describe("Attacks", () => {
                                              0,0,0])
 
             let pf = new PathFinder(game);
-            let indexes = pf.getArmiesWithMinSize(TILE.MINE, 2, true)
+            let indexes = pf.getArmiesWithMinSize(game.TILE.MINE, 2, true)
 
             expect(indexes.length).to.equal(1);
             expect(indexes[0].index).to.equal(0);
@@ -62,10 +71,11 @@ describe("Attacks", () => {
 
         it('should be able to find enemy armies', () => {
             let map = microMap;
-            // Mock game object here...
+            // Mock game object here... 
             let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
+                simple.mock(game, 'TILE', TILE)
                 simple.mock(game, 'BASE', 0)
                 simple.mock(game,'terrain', [ 0,-1,-1,
                                              -1,-1,-1,
@@ -75,7 +85,7 @@ describe("Attacks", () => {
                                              3,2,3])
 
             let pf = new PathFinder(game);
-            let indexes = pf.getArmiesWithMinSize(TILE.ANY_ENEMY, 2, true)
+            let indexes = pf.getArmiesWithMinSize(game.TILE.ANY_ENEMY, 2, true)
 
             let expectedIndexes = [6,7,8];
 
@@ -96,6 +106,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
+                simple.mock(game, 'TILE', TILE)
                 simple.mock(game,'terrain', [ 0,-1,-1,
                                              -1,-1,-1,
                                              -1,-1,-1])
@@ -120,6 +131,7 @@ describe("Attacks", () => {
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
                 simple.mock(game, 'BASE', 0)
+                simple.mock(game, 'TILE', TILE)
                 simple.mock(game,'terrain', [ 0,-1,-1,
                                              -1,-1,-1,
                                              -1,-1,-1])
@@ -143,6 +155,7 @@ describe("Attacks", () => {
             let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
+                simple.mock(game, 'TILE', TILE)
                 simple.mock(game, 'BASE', 0)
                 simple.mock(game,'terrain', [ 0, 0,-1,
                                               0, 0,-1,
@@ -165,6 +178,7 @@ describe("Attacks", () => {
             let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
+                simple.mock(game, 'TILE', TILE)
                 simple.mock(game, 'BASE', 0)
                 simple.mock(game,'terrain', [ 0, 0, 0,
                                               0, 0, 0,
@@ -189,6 +203,7 @@ describe("Attacks", () => {
             let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
+                simple.mock(game, 'TILE', { MINE: 0})
                 simple.mock(game, 'BASE', 0)
                 simple.mock(game,'terrain', [0,0,0,
                                              0,0,0,
@@ -213,6 +228,7 @@ describe("Attacks", () => {
             let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
+                simple.mock(game, 'TILE', { MINE: 0})
                 simple.mock(game, 'BASE', 0)
                 simple.mock(game,'terrain', [0,0,0,
                                              0,0,0,
@@ -238,6 +254,7 @@ describe("Attacks", () => {
             let game = new Game('', '', mockBot, true)
                 simple.mock(game, 'width', map.width)
                 simple.mock(game, 'terrain', map.terrain)
+                simple.mock(game, 'TILE', { MINE: 0})
                 simple.mock(game, 'BASE', 0)
                 simple.mock(game,'terrain', [0,0,0,
                                              0,0,1,

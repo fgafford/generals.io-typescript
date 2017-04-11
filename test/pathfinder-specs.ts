@@ -1,7 +1,6 @@
 
 import { Game } from '../src/Game'
 import { PathFinder } from '../src/PathFinder'
-import { TILE } from '../src/GameConstants';
 import { MockBot } from '../src/bots/mockBot'
 
 import * as chai from "chai";
@@ -10,6 +9,14 @@ const expect = chai.expect;
 
 describe("Pathfinder", () => {
     const mockBot = new MockBot();
+    const TILE = {
+      MINE: 0, // Assume 0 in default tests
+      EMPTY: -1,
+      MOUNTAIN: -2,
+      FOG: -3,
+      OBSTACLE: -4,
+      ANY_ENEMY: 100
+    };
     const microMap = require('./maps/3x3')
     const miniMap = require('./maps/5x5')
     const map1 = require('./maps/map1')
@@ -23,6 +30,7 @@ describe("Pathfinder", () => {
       let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', map.width)
         simple.mock(game, 'terrain', map.terrain)
+        simple.mock(game, 'TILE', TILE)
         simple.mock(game, 'BASE', map.BASE)
         simple.mock(game, 'cities', map.cities || [])
         
@@ -47,6 +55,7 @@ describe("Pathfinder", () => {
                                       -1,45, 1,-1,-1,                                      
                                       -1,-1,-1,-1,-1,
                                       -1,-1,-1,-1,-1,])
+        simple.mock(game, 'TILE', TILE)
         simple.mock(game, 'BASE', 12)
         simple.mock(game, 'cities', [11])
 
@@ -74,6 +83,7 @@ describe("Pathfinder", () => {
                                       -1,-1,-1,-1,-1,
                                       -1,-1,-1,-1,-1,])
         simple.mock(game, 'BASE', 12)
+        simple.mock(game, 'TILE', TILE)
         simple.mock(game, 'cities', [11])
 
       let pf = new PathFinder(game, true);
@@ -90,6 +100,7 @@ describe("Pathfinder", () => {
       let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', map.width)
         simple.mock(game, 'terrain', map.terrain)
+        simple.mock(game, 'TILE', TILE)
         simple.mock(game, 'BASE', map.BASE)
         simple.mock(game, 'cities', map.cities || [])
         
@@ -112,6 +123,7 @@ describe("Pathfinder", () => {
       let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
+        simple.mock(game, 'TILE', TILE)
         simple.mock(game, 'cities', [])
 
         let pf = new PathFinder(game);
@@ -142,6 +154,7 @@ describe("Pathfinder", () => {
         let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
+        simple.mock(game, 'TILE', TILE)
         simple.mock(game, 'cities', [])
         
         let pf = new PathFinder(game);
@@ -157,6 +170,7 @@ describe("Pathfinder", () => {
         let game = new Game('', '', mockBot, true)
         simple.mock(game, 'width', 10)
         simple.mock(game, 'terrain', new Array(100))
+        simple.mock(game, 'TILE', TILE)
         simple.mock(game, 'cities', [])
       
         let pf = new PathFinder(game);
@@ -179,6 +193,7 @@ describe("Pathfinder", () => {
         let game = new Game('', '', mockBot, true)
           simple.mock(game, 'width', map.width)
           simple.mock(game, 'terrain', map.terrain)
+          simple.mock(game, 'TILE', TILE)
           simple.mock(game, 'BASE', map.BASE)
           simple.mock(game, 'cities', map.cities || [])
        
@@ -196,6 +211,7 @@ describe("Pathfinder", () => {
         let game = new Game('', '', mockBot, true)
           simple.mock(game, 'width', map.width)
           simple.mock(game, 'terrain', map.terrain)
+          simple.mock(game, 'TILE', TILE)
           simple.mock(game, 'BASE', map.BASE)
           simple.mock(game, 'cities', map.cities || [])
        
@@ -222,6 +238,7 @@ describe("Pathfinder", () => {
                                           0,0,0,0,0,
                                           0,0,0,0,0])
             simple.mock(game, 'BASE', map.BASE)
+            simple.mock(game, 'TILE', TILE)
             simple.mock(game, 'cities', map.cities || [])
         
           let pf = new PathFinder(game);
@@ -231,7 +248,7 @@ describe("Pathfinder", () => {
           expect(move.index).to.equal(game.BASE);
         })
 
-        it('should perfer paths with great ally armies if same distance away', () => {
+        it('should prefer paths with great ally armies if same distance away', () => {
           let map = miniMap;
           // Mock game object here...
           let game = new Game('', '', mockBot, true)
@@ -247,25 +264,27 @@ describe("Pathfinder", () => {
                                            2, 2, 2, 2, 2,
                                           -1,-1,-1,-1,-1,])
             simple.mock(game, 'BASE', 10)
+            simple.mock(game, 'TILE', TILE)
             simple.mock(game, 'cities', [])
 
+          let start = 14;
           let pf = new PathFinder(game);
           pf.buildPath(game.BASE)
 
-          let move = pf.fastest(14,game.BASE);
+          let move = pf.fastest(start, game.BASE);
 
           expect(move.index).to.equal(19);
           // pf.print(game.BASE);
         })
 
-        it('should perfer allies over enemy tiles if same distance away', () => {
+        it('should prefer allies over enemy tiles if same distance away', () => {
           let map = miniMap;
           // Mock game object here...
           let game = new Game('', '', mockBot, true)
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
                                            0, 0, 0, 0, 0,
-                                           0,-2,-2,-2, 0,                                      
+                                           0,-2,-2,-2, 0, // last 0 is index 14                                      
                                            1, 1, 1, 1, 1,
                                           -1,-1,-1,-1,-1,])
             simple.mock(game, 'armies',  [-1,-1,-1,-1,-1,
@@ -274,12 +293,77 @@ describe("Pathfinder", () => {
                                            2, 2, 2, 2, 2,
                                           -1,-1,-1,-1,-1,])
             simple.mock(game, 'BASE', 10)
+            simple.mock(game, 'TILE', TILE)
             simple.mock(game, 'cities', [])
 
+          let start = 14;
           let pf = new PathFinder(game);
           pf.buildPath(game.BASE)
 
-          let move = pf.fastest(14,game.BASE);
+          let move = pf.fastest(start, game.BASE);
+
+          expect(move.index).to.equal(9);
+        })
+
+        it('should prefer allies over empty tiles if same distance away', () => {
+          let map = miniMap;
+          // Mock game object here...
+          let game = new Game('', '', mockBot, true)
+            simple.mock(game, 'width', map.width)
+            simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
+                                           0, 0, 0, 0, 0,
+                                           0,-2,-2,-2, 0, // last 0 is index 14                                     
+                                          -1,-1,-1,-1,-1,
+                                          -1,-1,-1,-1,-1,])
+            simple.mock(game, 'armies',  [-1,-1,-1,-1,-1,
+                                           1, 1, 1, 1, 1,
+                                           1,-1,-1,-1, 5,                                      
+                                           2, 2, 2, 2, 2,
+                                          -1,-1,-1,-1,-1,])
+            simple.mock(game, 'BASE', 10)
+            simple.mock(game, 'TILE', TILE)
+            simple.mock(game, 'cities', [])
+
+          let start = 14;
+          let pf = new PathFinder(game);
+          pf.buildPath(game.BASE)
+
+          let move = pf.fastest(start, game.BASE);
+
+          expect(move.index).to.equal(9);
+        })
+
+        it('should behave the same if our player index is different', () => {
+          let map = miniMap;
+          // Mock game object here...
+          let game = new Game('', '', mockBot, true)
+            simple.mock(game, 'width', map.width)
+            simple.mock(game, 'terrain', [-1,-1,-1,-1,-1,
+                                           1, 1, 1, 1, 1,
+                                           1,-2,-2,-2, 1, // last 1 is index 14                                       
+                                           0, 0, 0, 0, 0,
+                                          -1,-1,-1,-1,-1,])
+            simple.mock(game, 'armies',  [-1,-1,-1,-1,-1,
+                                           1, 1, 1, 1, 1,
+                                           1,-1,-1,-1, 5,                                      
+                                           2, 2, 2, 2, 2,
+                                          -1,-1,-1,-1,-1,])
+            simple.mock(game, 'BASE', 10)
+            simple.mock(game, 'TILE', {
+                                        MINE: 1, // We are index 1
+                                        EMPTY: -1,
+                                        MOUNTAIN: -2,
+                                        FOG: -3,
+                                        OBSTACLE: -4,
+                                        ANY_ENEMY: 100
+                                      })
+            simple.mock(game, 'cities', [])
+
+          let start = 14;
+          let pf = new PathFinder(game);
+          pf.buildPath(game.BASE)
+
+          let move = pf.fastest(start, game.BASE);
 
           expect(move.index).to.equal(9);
         })
@@ -297,10 +381,11 @@ describe("Pathfinder", () => {
             simple.mock(game, 'width', map.width)
             simple.mock(game, 'terrain', map.terrain)
             simple.mock(game, 'BASE', map.BASE)
+            simple.mock(game, 'TILE', TILE)
             simple.mock(game, 'cities', map.cities || [])
 
           let pf = new PathFinder(game);
-          let move = pf.getNearest(game.BASE, TILE.EMPTY);
+          let move = pf.getNearest(game.BASE, game.TILE.EMPTY);
 
           // Need to Mock the terrain in other tests cases....
           let expected = [1,3,5,7];
@@ -317,9 +402,10 @@ describe("Pathfinder", () => {
                                           0,0,0,
                                           0,0,-1])
             simple.mock(game, 'cities', map.cities || [])
+            simple.mock(game, 'TILE', TILE)
 
           let pf = new PathFinder(game);
-          let moves = pf.getNearest(4, TILE.EMPTY);
+          let moves = pf.getNearest(4, game.TILE.EMPTY);
 
           // Need to Mock the terrain in other tests cases....
           expect(moves.index).to.equal(8);
@@ -334,9 +420,10 @@ describe("Pathfinder", () => {
                                           0,0,0,
                                           0,-1,-1])
             simple.mock(game, 'cities', map.cities || [])
+            simple.mock(game, 'TILE', TILE)
 
           let pf = new PathFinder(game);
-          let move = pf.getNearest(0, TILE.EMPTY);
+          let move = pf.getNearest(0, game.TILE.EMPTY);
 
           // Need to Mock the terrain in other tests cases....
           expect(move.index).to.equal(7);
@@ -351,9 +438,10 @@ describe("Pathfinder", () => {
                                           0,0,0,
                                           0,0,-1])
             simple.mock(game, 'cities', map.cities || [])
+            simple.mock(game, 'TILE', TILE)
 
           let pf = new PathFinder(game);
-          let move = pf.getNearest(0, TILE.EMPTY);
+          let move = pf.getNearest(0, game.TILE.EMPTY);
 
           // Need to Mock the terrain in other tests cases....
           expect(move.distance).to.equal(4);
@@ -368,6 +456,7 @@ describe("Pathfinder", () => {
                                           0,0,-1,
                                           0,-1,1])
             simple.mock(game, 'cities', map.cities || []) 
+            simple.mock(game, 'TILE', TILE)
 
           let pf = new PathFinder(game);
           let move = pf.getNearest(0);
@@ -375,7 +464,7 @@ describe("Pathfinder", () => {
           // Need to Mock the terrain in other tests cases....
           expect(move.index).to.equal(8);
           
-
+          simple.mock(game, 'TILE', TILE)
           simple.mock(game, 'terrain', [0,0, 1,
                                         0,0,-1,
                                         0,-1,1])
