@@ -120,9 +120,25 @@ export default class Curly implements bot {
 
       if(generals.length){ return this.moveLargestArmyTo(generals[0]); }
       
-      if(this.landRatio() < 1.1){
-        let move = this.pathFinder.expand(false, 2, this.pathFinder.nearestToEmpty)
-        if(move){ return move; }
+      let maxDist = 1;
+      let closeToEmpty = this.pathFinder.getArmiesWithMinSize(game.TILE.MINE,2)
+                                        .filter(a => { 
+                                          let nearest = this.pathFinder.getNearest(a.index, game.TILE.EMPTY)
+                                          return nearest ?
+                                                    nearest.distance <= maxDist :
+                                                    false;
+                                        });
+      if(closeToEmpty.length){
+        let largest = this.pathFinder.getArmiesWithMinSize(this.game.TILE.MINE, 1, false, this.pathFinder.largestFirst)[0];
+        let army:{index: number, armies: number};
+        do {
+          army = this.pathFinder.randomItem(closeToEmpty);
+          var move = new Move(army.index, 
+                              this.pathFinder.getNearest(army.index, game.TILE.EMPTY).index, 
+                              (new Date().getTime() - this.started))
+        } while(army.index !== largest.index && !move)
+        
+        return move;
       }
 
       let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.furthestFromBase);
