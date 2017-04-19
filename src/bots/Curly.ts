@@ -44,49 +44,18 @@ export default class Curly implements bot {
       let army = this.pathFinder.getArmiesWithMinSize(this.game.TILE.MINE, 1, false, this.pathFinder.largestFirst)[0];
       // let regroupArmy = (armies[0].index === self.vanguard.index) ? armies[1] :armies[0];
       let next = this.pathFinder.fastest(army.index, index);
-      return new Move(army.index, next.index, (new Date().getTime()) - this.started);
+      return next ? 
+              new Move(army.index, next.index, (new Date().getTime()) - this.started) :
+              null;
   }
-
-  /**
-   * Get one of the largest army at random. A randomly selected army should
-   * eventually pull a greater percentage of armies back to base.
-   * 
-   * @param index - end goal
-   *
-  furthestLargestArmy(index: number): Move {
-     // regroup effors
-      let self = this;
-      let regroupArmy = this.attacks.getArmiesWithMinSize(TILE.MINE, 1, false, this.attacks.largestFirst)
-                                  .filter((army, i, arr) => {
-                                    return army.armies >= arr[1].armies && // Vanguard is likey first in list
-                                            army.index !== self.vanguard.index
-                                  })
-                                  .sort(this.attacks.furthestFromBase)[0];
-      // let regroupArmy = this.pathFinder.randomItem(canidates);
-      let next = this.pathFinder.fastest(regroupArmy.index, index);
-      return new Move(regroupArmy.index, next.index, (new Date().getTime()) - this.started);
-  }
-  */
 
   /**
    * The ratio of allied lands to enemy lands
    */
   landRatio(): number {
+    // BROKEN: playerIndex!
     return this.game.scores[0].tiles / this.game.scores[1].tiles
   }
-
-  /**
-   * Move the vanguard towards the given goal
-   * 
-   * @param goal - index where Vanguard is headed
-   *
-  moveVanguardTowards(goal: number): Move {
-    let next = this.pathFinder.fastest(this.vanguard.index, goal);
-    let move = new Move(this.vanguard.index, next.index, (new Date().getTime()) - this.started);
-    this.vanguard.index = next.index;
-    return move;
-  }
-  */
 
   /**
    * The meet of the bot
@@ -100,13 +69,6 @@ export default class Curly implements bot {
       // this.maxStrength = game.scores[0].total - game.scores[0].tiles;
       // this.enemyMaxStrength = game.scores[1].total - game.scores[1].tiles;
 
-
-      // console.log('Defense:', this.defense);
-      // console.log('Enemy:', this.enemyMaxStrength);
-      // console.log('Safe:', this.areWeDefended());
-      console.log('Ratio:', this.landRatio());
-      // console.log('Vanguard: ', this.vanguard);
-      // console.log('maxTurnBonus: ', this.maxTurnLandBonus());
       console.log('cities diff:', updateDate.cities_diff);
 
       if(this.maxTurnLandBonus() < 2){
@@ -118,37 +80,40 @@ export default class Curly implements bot {
       generals.splice(game.playerIndex,1) // remove us from it
       generals = generals.filter(c => c > -1)
 
-      if(generals.length){ return this.moveLargestArmyTo(generals[0]); }
+      if(generals.length){ 
+        let move =  this.moveLargestArmyTo(generals[0]);
+        return move ? move :
+                      this.moveLargestArmyTo(game.BASE);
+      }
       
+      // Largest Army
+      let largest = this.pathFinder.getArmiesWithMinSize(this.game.TILE.MINE, 1, false, this.pathFinder.largestFirst)[0];
+
       let maxDist = 1;
       let closeToEmpty = this.pathFinder.getArmiesWithMinSize(game.TILE.MINE,2)
                                         .filter(a => { 
                                           let nearest = this.pathFinder.getNearest(a.index, game.TILE.EMPTY)
-                                          return nearest ?
-                                                    nearest.distance <= maxDist :
-                                                    false;
+                                          return (nearest && (nearest.distance <= maxDist)) && (a.index !== largest.index)
                                         });
-      if(closeToEmpty.length){
-        let largest = this.pathFinder.getArmiesWithMinSize(this.game.TILE.MINE, 1, false, this.pathFinder.largestFirst)[0];
-        let army:{index: number, armies: number};
-        do {
-          army = this.pathFinder.randomItem(closeToEmpty);
-          var move = new Move(army.index, 
-                              this.pathFinder.getNearest(army.index, game.TILE.EMPTY).index, 
-                              (new Date().getTime() - this.started))
-        } while(army.index !== largest.index && !move)
-        
-        return move;
+      if(closeToEmpty.length > 0){
+        let army = this.pathFinder.randomItem(closeToEmpty);
+        let nearest = this.pathFinder.getNearest(army.index, game.TILE.EMPTY)
+        let next = this.pathFinder.fastest(nearest.index, game.BASE)
+ 
+        return new Move(army.index, nearest.index, (new Date().getTime() - this.started));
       }
 
-      let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.furthestFromBase);
-      if(enemies.length){
-        // Attack nearest enemy
-        return this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
+      let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase);
+      if(enemies.length > 0){
+        let move =  this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
+        return move ? 
+                  move : 
+                  this.moveLargestArmyTo(game.BASE);
       }
 
       // Keep expanding if no enemies found
-      return this.pathFinder.expand(true, 2, this.pathFinder.nearestToEmpty);
+      let toEmpty = this.pathFinder.expand(true, 2, this.pathFinder.nearestToEmpty);
+      return toEmpty // Not sure what else to do if no empty and no enemy around...
   }
 
   setup(game: Game): void {
