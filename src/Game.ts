@@ -22,6 +22,7 @@ export class Game {
   private room: string;
   private bot: bot;
   private gameId: string;
+  private awaitingMove = false;
 
   private socket: SocketIOClient.Socket = io('http://botws.generals.io')
 
@@ -128,9 +129,6 @@ export class Game {
     // The last |size| terms are terrain values.
     // terrain[0] is the top-left corner of the map.
     this.terrain = this.map.slice(this.size + 2, this.size + 2 + this.size);
-
-    // display the game board
-    this.print();   
     
 
     // save the location of our base
@@ -159,27 +157,50 @@ export class Game {
               data.generals[i];
       });
 
-      try{
-        let move = this.bot.update(this, data);
-        console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
-        if(move){
-          this.socket.emit('attack',move.from, move.to, !!move.half)
-          console.log('Move:', move);      
-          console.log("Thinking: ", move.elapse, "ms");
-        } else {
-          console.error("Invalid move:", move);
-          this.debug();
-        }
-
-        // log time elapse
-        console.log("Total:", (new Date().getTime() - moveTimer), "ms");  
-      } catch(err){
-        console.error(`[${this.gameId}] Bot Error:`, err);
-        this.debug();
-      }
+      // Request and send move from Bot
+      this.requestMoveFromBot(data, moveTimer);
     }
 
   }
+
+  /**
+   * Request move from Bot and send the move back to the server
+   * 
+   * @method requestMoveFromBot
+   * @param {any} data - update data recieved from gernerals.io server
+   * @param {number} timer - the full turn counter
+   */
+  requestMoveFromBot = (data: any, moveTimer: number): void => {
+      if(!this.awaitingMove){
+        // lock to prevent parallel Bot calculations
+        this.awaitingMove = true;
+        try{
+          let move = this.bot.update(this, data);
+          console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
+          if(move){
+            this.socket.emit('attack',move.from, move.to, !!move.half)
+            console.log('Move:', move);      
+            console.log("Thinking: ", move.elapse, "ms");
+            
+            // display the game board
+            this.print(move);   
+        
+          } else {
+            console.error("Invalid move:", move);
+            this.debug();
+          }
+
+          // log time elapse
+          console.log("Total:", (new Date().getTime() - moveTimer), "ms");  
+        } catch(err){
+          console.error(`[${this.gameId}] Bot Error:`, err);
+          this.debug();
+        } finally {
+          // Release the lock
+          this.awaitingMove = false
+        }
+      }
+  } 
 
   /*
    * Returns a new array created by patching the diff into the old array.
@@ -229,16 +250,13 @@ export class Game {
    * Pretty print either the armies or terrain array
    *
    * @method print
-   * @param  {number} width [description]
-   * @param  {number} map   [description]
-   * @return {[type]}       [description]
+   * @param  {Move} move - Optional move to show with -/+ on map
    */
   public print = (move?: Move): void => {
         let self = this;
-        console.log('==========================================================================');
         let key = {
             [this.TILE.EMPTY]: ' ',
-            [this.TILE.MINE]: color.yellow('+'),
+            [this.TILE.MINE]: color.yellow('-'),
             [this.TILE.FOG]: color.gray('~'),
             [this.TILE.MOUNTAIN]: color.gray('M'),
             [this.TILE.OBSTACLE]: color.cyan('?') 
@@ -262,8 +280,13 @@ export class Game {
             for (let j = 0; j < row.length; j++) {
                 let printRow = color.gray('[');
 
-                if(armyRow[j] > 0){
-                    if(armyRow[j] === undefined){
+                if(move && i+j === move.from){
+                      printRow += color.red(' - ');
+                } else if(move && i+j === move.to){
+                      printRow += color.green(' + ');
+                      
+                } else if(armyRow[j] > 0){
+                  if(armyRow[j] === undefined){
                       printRow += '   ';
                     } else {
                       printRow += terrainColor(i+j, 
@@ -281,6 +304,7 @@ export class Game {
             }
             console.log(out + '}');
         }
+        console.log('==========================================================================');
     }
 
     public debug(){
