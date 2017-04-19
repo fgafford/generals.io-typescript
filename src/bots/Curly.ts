@@ -69,8 +69,6 @@ export default class Curly implements bot {
       // this.maxStrength = game.scores[0].total - game.scores[0].tiles;
       // this.enemyMaxStrength = game.scores[1].total - game.scores[1].tiles;
 
-      console.log('cities diff:', updateDate.cities_diff);
-
       if(this.maxTurnLandBonus() < 2){
         let move = this.pathFinder.expand(true, 2, this.pathFinder.nearestToBase);
         if(move){ return move; }

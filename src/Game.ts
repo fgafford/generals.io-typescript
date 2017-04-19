@@ -113,6 +113,8 @@ export class Game {
    * Here is where the real work happens
    */
   private update = (data: any): void => {
+    console.log('Update Recieved: ', (new Date()));
+    
     let moveTimer = new Date().getTime();
 
     this.turn = data.turn;
@@ -184,21 +186,28 @@ export class Game {
             
             // display the game board
             this.print(move);   
-        
+
           } else {
             console.error("Invalid move:", move);
             this.debug();
           }
 
           // log time elapse
-          console.log("Total:", (new Date().getTime() - moveTimer), "ms");  
+          console.log("Total:", (new Date().getTime() - moveTimer), "ms"); 
+          console.log('Ended at: ', (new Date())); 
+          console.log("==========================");
+
         } catch(err){
           console.error(`[${this.gameId}] Bot Error:`, err);
           this.debug();
+          console.log("==========================");
+
         } finally {
           // Release the lock
           this.awaitingMove = false
         }
+      } else {
+        console.error(`[Game: ${this.gameId}- Turn: ${this.turn + '('+ Math.floor(this.turn/2) +')'}] Bot Lag... turn missed` )
       }
   } 
 
@@ -284,7 +293,7 @@ export class Game {
                       printRow += color.red(' - ');
                 } else if(move && i+j === move.to){
                       printRow += color.green(' + ');
-                      
+
                 } else if(armyRow[j] > 0){
                   if(armyRow[j] === undefined){
                       printRow += '   ';
@@ -304,7 +313,6 @@ export class Game {
             }
             console.log(out + '}');
         }
-        console.log('==========================================================================');
     }
 
     public debug(){
