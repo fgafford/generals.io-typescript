@@ -164,7 +164,7 @@ export default class Curly implements bot {
 
 
       // Keep expanding if no enemies found
-      let toEmpty = this.pathFinder.expand(true, 2, this.pathFinder.nearestToBase);
+      let toEmpty = this.pathFinder.expand(true, 2, this.pathFinder.nearestToEmpty);
       return toEmpty // Not sure what else to do if no empty and no enemy around...
   }
 
