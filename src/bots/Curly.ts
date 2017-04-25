@@ -109,8 +109,10 @@ export default class Curly implements bot {
       generals = generals.filter(c => c > -1)
 
       // get desperate and pull from base if they have lots more land
-      if(this.landRatio() < .75){
-        let next = this.pathFinder.getNearest(this.game.BASE)
+      if((this.landRatio() < .75) && (this.game.armies[this.game.BASE] > 100)){
+        let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1).length
+        let nearest = this.pathFinder.getNearest(this.game.BASE, (enemies ? this.game.TILE.ANY_ENEMY : this.game.TILE.EMPTY))
+        let next = this.pathFinder.fastest(this.game.BASE, nearest.index)
         return new Move(this.game.BASE, next.index, (new Date().getTime() - this.started), true) // only take 1/2 of them
       }
 
