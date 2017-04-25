@@ -331,7 +331,6 @@ export class PathFinder {
      * @param {number} [minArmies=2] - only attack from Tiles with at least X armies  
      * @param {function} [sort=largest] - Optional custom sort function for selecting army to move
      * @param {function} [sort=largest] - Optional custom sort function for selecting army to move
-     * @param {boolean} [attack=false] - prefer attacking enemy to empty lands
      * 
      * @return {Move} The expand move or NULL if not valid expand move exists
      */
@@ -339,8 +338,7 @@ export class PathFinder {
         useBase: boolean = true, 
         minArmies: number = 2, 
         sort?:(a:{index: number, armies: number}, b:{index: number, armies: number}) => number, 
-        filter?:(army:{index: number, armies: number}) => boolean, 
-        attack: boolean = false): Move 
+        filter?:(army:{index: number, armies: number}) => boolean)
     {
         let started = (new Date().getTime());
         
@@ -351,12 +349,12 @@ export class PathFinder {
         let choosen = ordered[0]
 
         if(choosen){
-            let nearest = this.getNearest(choosen.index, (attack ? this.game.TILE.ANY_ENEMY : this.game.TILE.EMPTY))
-            if(!nearest) { return null; } //TODO: really invetigate this at some point
-            let next = this.fastest(choosen.index, nearest.index)
+            let nearest = this.getNearest(choosen.index, this.game.TILE.EMPTY)
+            // Regroup to base if not able to expand
+            let next = this.fastest(choosen.index, (nearest ? nearest.index : this.game.BASE))
             // update the elapse timer
-            return new Move(choosen.index,next.index,(new Date().getTime() - started))
-        }
+            return new Move(choosen.index, next.index, (new Date().getTime() - started))
+        } 
 
         return null;
     }
