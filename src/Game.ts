@@ -166,10 +166,19 @@ export class Game {
       
     } else {
       // Update generals here
-      this.generals = this.generals.map((g, i) => {
-        return data.generals[i] === -1 ?
-              g :
-              data.generals[i];
+      let game = this;
+      this.generals = this.generals.map((location, i) => {
+        let tileCount = game.scores.filter(s => s.i === i)
+                                   .map(s => s.tiles)[0]
+        if(tileCount < 1){ 
+          // their memory fades into the abyss
+          return -1; 
+        } else {
+          // Keep record of already found generals
+          return data.generals[i] === -1 ?
+                location :
+                data.generals[i];
+        }
       });
 
       // Request and send move from Bot
@@ -260,11 +269,13 @@ export class Game {
 
   won(data: any){
     console.log('Win! Defeted: ', data);
+    this.socket.emit('leave_game')
     this.requireCoolDown ? this.coolDown() : process.exit(1);
   }
 
   lost(data: any){
     console.log('Lose. Defeated by: ', data);
+    this.socket.emit('leave_game')
     this.requireCoolDown ? this.coolDown() : process.exit(1);
   }
 
