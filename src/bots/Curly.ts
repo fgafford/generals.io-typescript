@@ -78,8 +78,12 @@ export default class Curly implements bot {
    * The ratio of allied lands to enemy lands
    */
   landRatio(): number {
-    // BROKEN: playerIndex!
-    return this.game.scores[0].tiles / this.game.scores[1].tiles
+    const self = this;
+    const myForces = this.game.scores[this.game.playerIndex];
+    const largestEnemy = this.game.scores
+                          .filter(s => s.i !== self.game.playerIndex)
+                          .sort((a,b) => b.tiles - a.tiles)[0]
+    return  myForces.tiles / largestEnemy.tiles
   }
 
   /**
@@ -98,12 +102,17 @@ export default class Curly implements bot {
 
       if(this.maxTurnLandBonus() < 2){
         let move = this.pathFinder.expand(true, 2, this.pathFinder.nearestToBase);
-        if(move){ return move; }
       } 
 
       let generals = game.generals.slice(0) // Copy the array
       generals.splice(game.playerIndex,1) // remove us from it
       generals = generals.filter(c => c > -1)
+
+      // get desperate and pull from base if they have lots more land
+      if(this.landRatio() < .75){
+        let next = this.pathFinder.getNearest(this.game.BASE)
+        return new Move(this.game.BASE, next.index, (new Date().getTime() - this.started), true) // only take 1/2 of them
+      }
 
 
       // Largest Army
@@ -113,8 +122,8 @@ export default class Curly implements bot {
       // Attack General if location is known
       if(generals.length){ 
         // let move =  this.moveLargestArmyTo(generals[0]);
-        let min = Math.floor(largest.armies / 4)
-        let move = this.gatherAndMoveLargest(4, (min > 1 ? min : 2), generals[0])
+        let min = Math.floor(largest.armies / 5)
+        let move = this.gatherAndMoveLargest(5, (min > 1 ? min : 2), generals[0])
         return move ? move :
                       this.moveLargestArmyTo(game.BASE);
       }
