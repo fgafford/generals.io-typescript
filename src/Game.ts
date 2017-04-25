@@ -70,19 +70,32 @@ export class Game {
       this.socket.emit('set_username', this.user_id, this.botName);
       console.log('Connected to server.');
 
-      switch(this.room){
+      let opts = JSON.parse(this.room);
+
+      const room = opts[Math.floor(Math.random()*opts.length)]
+
+      switch(room){
+        // 1v1 (One on One) room
         case '1v1':
           this.requireCoolDown = true;
           this.socket.emit('join_1v1', this.user_id);
           console.log('joined 1v1 game room');
-          
-        // TODO: other game types here
+          break;
+
+        // FFA (8v8) game
+        case 'FFA':
+          this.socket.emit('play', this.user_id);
+          console.log('joined FFA!');
+          setTimeout(() => { this.socket.emit('set_force_start', true) }, 60*1000) // 1 minute
+          break;
+        
+        // Private game 
         default:
-          this.socket.emit('join_private', this.room, this.user_id);
-          console.log('Joined custom game at http://bot.generals.io/games/' + encodeURIComponent(this.room));
+          this.socket.emit('join_private', room, this.user_id);
+          this.socket.emit('set_force_start', room, true); // Force start
+          console.log('Joined custom game at http://bot.generals.io/games/' + encodeURIComponent(room));
       }
 
-      this.socket.emit('set_force_start', this.room, true);
       
     });
     this.socket.on('game_start', this.game_start);
