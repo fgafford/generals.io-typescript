@@ -2,7 +2,7 @@
 import * as io from "socket.io-client";
 import { bot } from "./bots/bot"
 import { Move } from './Move'
-
+import * as child from 'child_process'
 
 
 const color = require('colors');
@@ -20,7 +20,8 @@ export class Game {
   private user_id: string;
   private botName: string;
   private room: string;
-  private bot: bot;
+  // private bot: bot;
+  private botProcess: child.ChildProcess;
   private gameId: string;
   private awaitingMove = false;
 
@@ -53,12 +54,14 @@ export class Game {
 
   // private botConfig;
 
-  constructor(user_id: string, room: string, bot: bot, testing = false){
+  constructor(user_id: string, room: string, bot_process: child.ChildProcess, testing = false){
     if(!testing){
       this.user_id = user_id;
       this.room = room;
-      this.botName = bot.name; 
-      this.bot = bot;
+      this.botProcess = bot_process;
+
+      // this.botName = bot.name; 
+      // this.bot = bot;
 
       // setup listening handlers
       this.setupListeners(this.socket);
@@ -198,39 +201,39 @@ export class Game {
       if(!this.awaitingMove){
         // lock to prevent parallel Bot calculations
         this.awaitingMove = true;
-        try{
-          let move = this.bot.update(this, data);
-          console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
-          if(move){
-            this.socket.emit('attack',move.from, move.to, !!move.half)
-            console.log('Move:', move);      
-            console.log("Thinking: ", move.elapse, "ms");
-            
-            // display the game board
-            this.print(move);   
-
-          } else {
-            console.error("Invalid move:", move);
-            this.debug();
-          }
-
-          // log time elapse
-          console.log("Total:", (new Date().getTime() - moveTimer), "ms"); 
-          console.log('Ended at: ', (new Date())); 
-          console.log("==========================");
-
-        } catch(err){
-          console.error(`[${this.gameId}] Bot Error:`, err);
-          this.debug();
-          console.log("==========================");
-
-        } finally {
-          // Release the lock
-          this.awaitingMove = false
-        }
+        this.botProcess.send({game: this, update: data})
       } else {
         console.error(`[Game: ${this.gameId}- Turn: ${this.turn + '('+ Math.floor(this.turn/2) +')'}] Bot Lag... turn missed` )
       }
+  } 
+
+  /**
+   * Handels responses from Bot and sends move to the generais.io server
+   */
+  botResponseHandler = (move: Move): void => {
+      console.log('Turn:', this.turn,'('+ Math.floor(this.turn/2) +')');
+      if(move){
+        this.socket.emit('attack',move.from, move.to, !!move.half)
+        console.log('Move:', move);      
+        console.log("Thinking: ", move.elapse, "ms");
+        
+        // display the game board
+        this.print(move);   
+
+      } else {
+        console.error("Invalid move:", move);
+        this.debug();
+      }
+
+      // log time elapse
+      // console.log("Total:", (new Date().getTime() - moveTimer), "ms"); 
+      console.log('Ended at: ', (new Date())); 
+      console.log("==========================");
+
+
+      // Release the lock
+      this.awaitingMove = false
+
   } 
 
   /*
