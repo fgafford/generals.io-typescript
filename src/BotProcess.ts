@@ -2,16 +2,17 @@ import { bot } from './bots/bot';
 import { Move } from './Move'
 import { Game } from './Game'
 
-  console.log('Made it here');
 /**
  * This small script provides an interface for running a bot
  * as an independent process.
  * 
  * Responsible for being a stand between for the Commander and the bot.
  */
-let fileName: string = null;
-let botName: string = null;
-let bot: bot = null;
+let botName = process.argv[2]; // 1st passed arg
+let fileName = process.argv[3]; // 2nd passed arg
+
+// let botImpl = require(fileName)['default'];  
+const bot = new (require(__dirname + fileName)['default'])(botName);
 
 /**
  * Responsible for accepting message form Game passing them to the bot
@@ -33,10 +34,4 @@ process.on('message', (gameData: {game: Game, update: any}) => {
  * @param botNameArg 
  * @param fileNameArg 
  */
-export function BotProcess(){
-   botName = process.argv[2];
-   fileName = process.argv[3];
-
-   let botImpl = require(fileName)['default'];  
-   bot = new botImpl(botName);
-}
+export {}
