@@ -3,10 +3,11 @@ import * as io from "socket.io-client";
 import { bot } from "./bots/bot"
 import { Move } from './Move'
 import * as child from 'child_process'
+import * as util from 'util';
 
 
 const color = require('colors');
-// import { GameSettings } from "../config/gameSettings";
+let botProcess: child.ChildProcess = null;
 
 /*
  * game.ts
@@ -54,15 +55,12 @@ export class Game {
 
   // private botConfig;
 
-  constructor(user_id: string, rooms: string[], bot_process: child.ChildProcess, testing = false){
+  constructor(user_id: string, rooms: string[], botName: string, bot_process: child.ChildProcess, testing = false){
     if(!testing){
       this.user_id = user_id;
       this.rooms = rooms;
-      this.botProcess = bot_process;
-
-      // this.botName = bot.name; 
-      // this.bot = bot;
-
+      this.botName = botName;
+      botProcess = bot_process;
       // setup listening handlers
       this.setupListeners(this.socket);
     }
@@ -72,8 +70,6 @@ export class Game {
     this.socket.on('connect', () => {
       this.socket.emit('set_username', this.user_id, this.botName);
       console.log('Connected to server.');
-
-      // let opts = JSON.parse(this.room);
 
       const room = this.rooms[Math.floor(Math.random()*this.rooms.length)]
 
@@ -200,8 +196,9 @@ export class Game {
   requestMoveFromBot = (data: any, moveTimer: number): void => {
       if(!this.awaitingMove){
         // lock to prevent parallel Bot calculations
-        this.awaitingMove = true;
-        this.botProcess.send({game: this, update: data})
+        this.awaitingMove = true;     
+        botProcess.send(util.inspect(this)) 
+
       } else {
         console.error(`[Game: ${this.gameId}- Turn: ${this.turn + '('+ Math.floor(this.turn/2) +')'}] Bot Lag... turn missed` )
       }

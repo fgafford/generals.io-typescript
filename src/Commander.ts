@@ -21,10 +21,6 @@ try{
 
 // let botImpl = require(fileName)['default'];  
 // let bot = new botImpl(botName);
-
 const bot_process = child.fork(`${__dirname}/BotProcess.js`, [botName, fileName])
-// console.log(bot_process);
 
-
-new Game(user_id, rooms, bot_process);
-
+new Game(user_id, rooms, botName, bot_process);

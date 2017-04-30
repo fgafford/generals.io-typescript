@@ -11,22 +11,30 @@ import { Game } from './Game'
 let botName = process.argv[2]; // 1st passed arg
 let fileName = process.argv[3]; // 2nd passed arg
 
-// let botImpl = require(fileName)['default'];  
-const bot = new (require(__dirname + fileName)['default'])(botName);
+let botImpl = require(__dirname + fileName).default;  
+const theBot: bot = new botImpl(botName);
 
 /**
  * Responsible for accepting message form Game passing them to the bot
  * and sending the result from the bot back to the game process.
  */
-process.on('message', (gameData: {game: Game, update: any}) => {
+process.on('message', (data: string) => {
+
+console.log('data:', typeof data);
+  let gameData:any = JSON.parse(JSON.stringify(data));
+console.log('parsed:', typeof gameData);
+console.log(gameData.BASE);
+
+
+
   let move: Move = null;
-  try{
-    move = bot.update(gameData.game, gameData.update)
-  } catch (err) {
-    console.log(`Bot Error :  ${err}`);
-  } finally {
+  // try{
+    move = theBot.update(gameData.game, gameData.update)
+  // } catch (err) {
+  //   console.log(`Bot Error :  ${err}`);
+  // } finally {
     process.send(move)
-  }
+  // }
 })
 
 /**
@@ -34,4 +42,4 @@ process.on('message', (gameData: {game: Game, update: any}) => {
  * @param botNameArg 
  * @param fileNameArg 
  */
-export {}
+// export {}

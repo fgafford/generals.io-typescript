@@ -25,7 +25,7 @@ export default class Curly implements bot {
   public name: string;
 
   constructor(name: string){
-    this.name = name;
+    this.name = name;    
   }
 
   /**
@@ -89,10 +89,15 @@ export default class Curly implements bot {
   /**
    * The meet of the bot
    */
-  update(game: Game, updateDate: any): Move {
+  update(game: Game, updateData: any): Move {
       let self = this; // its still JavaScript
 
-      if(!this.pathFinder){ this.setup(game); }
+console.log('game:', game);
+console.log('update:', updateData);
+
+
+      if(!this.pathFinder){ this.pathFinder = new PathFinder(game)}
+
       this.started = new Date().getTime();
 
       this.game = game;
@@ -166,10 +171,6 @@ export default class Curly implements bot {
       // Keep expanding if no enemies found
       let toEmpty = this.pathFinder.expand(true, 2, this.pathFinder.nearestToEmpty);
       return toEmpty // Not sure what else to do if no empty and no enemy around...
-  }
-
-  setup(game: Game): void {
-    this.pathFinder = new PathFinder(game);
   }
 
 }
