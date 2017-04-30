@@ -19,7 +19,7 @@ export class Game {
 
   private user_id: string;
   private botName: string;
-  private room: string;
+  private rooms: string[];
   // private bot: bot;
   private botProcess: child.ChildProcess;
   private gameId: string;
@@ -54,10 +54,10 @@ export class Game {
 
   // private botConfig;
 
-  constructor(user_id: string, room: string, bot_process: child.ChildProcess, testing = false){
+  constructor(user_id: string, rooms: string[], bot_process: child.ChildProcess, testing = false){
     if(!testing){
       this.user_id = user_id;
-      this.room = room;
+      this.rooms = rooms;
       this.botProcess = bot_process;
 
       // this.botName = bot.name; 
@@ -73,9 +73,9 @@ export class Game {
       this.socket.emit('set_username', this.user_id, this.botName);
       console.log('Connected to server.');
 
-      let opts = JSON.parse(this.room);
+      // let opts = JSON.parse(this.room);
 
-      const room = opts[Math.floor(Math.random()*opts.length)]
+      const room = this.rooms[Math.floor(Math.random()*this.rooms.length)]
 
       switch(room){
         // 1v1 (One on One) room
