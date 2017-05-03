@@ -106,6 +106,9 @@ export class Game {
     this.socket.on('error_set_username', (err: string)  => {
       if(err.length){ console.log('Username issue:', err);}
     });
+
+    // Set up handler for bot responses
+    botProcess.on('message', this.botResponseHandler)
   }
 
   // Should really set the type here at some point

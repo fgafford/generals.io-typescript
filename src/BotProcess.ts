@@ -20,13 +20,13 @@ const theBot: bot = new botImpl(botName);
  */
 process.on('message', (gameData: {game: Game, update: any}) => {
   let move: Move = null;
-  // try{
-    move = theBot.update(gameData.game, gameData.update)
-  // } catch (err) {
-  //   console.log(`Bot Error :  ${err}`);
-  // } finally {
-    process.send(move)
-  // }
+  try{
+      move = theBot.update(gameData.game, gameData.update)
+  } catch (err) {
+      console.log(`Bot Error :  ${err}`);
+  } finally {
+      process.send(move)
+  }
 })
 
 /**
