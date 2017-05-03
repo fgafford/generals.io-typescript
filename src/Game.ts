@@ -197,11 +197,31 @@ export class Game {
       if(!this.awaitingMove){
         // lock to prevent parallel Bot calculations
         this.awaitingMove = true;     
-        botProcess.send(util.inspect(this)) 
+        botProcess.send({game: this.asSafeObject(), update: data}) //util.inspect(this)
 
       } else {
         console.error(`[Game: ${this.gameId}- Turn: ${this.turn + '('+ Math.floor(this.turn/2) +')'}] Bot Lag... turn missed` )
       }
+  } 
+
+  asSafeObject = () => {
+    return {
+      playerIndex: this.playerIndex,
+      generals: this.generals,
+      turn: this.turn, 
+      cities: this.cities,
+      map: this.map,
+      terrain: this.terrain,
+      armies: this.armies,
+      scores: this.scores,
+
+      BASE: this.BASE,
+      width: this.width, 
+      height: this.height, 
+      size: this.size,
+
+      TILE: this.TILE
+    }
   } 
 
   /**

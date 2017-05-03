@@ -18,15 +18,7 @@ const theBot: bot = new botImpl(botName);
  * Responsible for accepting message form Game passing them to the bot
  * and sending the result from the bot back to the game process.
  */
-process.on('message', (data: string) => {
-
-console.log('data:', typeof data);
-  let gameData:any = JSON.parse(JSON.stringify(data));
-console.log('parsed:', typeof gameData);
-console.log(gameData.BASE);
-
-
-
+process.on('message', (gameData: {game: Game, update: any}) => {
   let move: Move = null;
   // try{
     move = theBot.update(gameData.game, gameData.update)

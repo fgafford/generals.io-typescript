@@ -92,10 +92,6 @@ export default class Curly implements bot {
   update(game: Game, updateData: any): Move {
       let self = this; // its still JavaScript
 
-console.log('game:', game);
-console.log('update:', updateData);
-
-
       if(!this.pathFinder){ this.pathFinder = new PathFinder(game)}
 
       this.started = new Date().getTime();
