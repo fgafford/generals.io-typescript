@@ -103,6 +103,13 @@ export default class Curly implements bot {
 
       if(this.maxTurnLandBonus() < 2){
         let move = this.pathFinder.expand(true, 2, this.pathFinder.nearestToBase);
+        if(move){
+          return move 
+        } else {
+          let army = this.pathFinder.getArmiesWithMinSize(game.TILE.MINE, 2, false, this.pathFinder.nearestToBase)[0]
+          let next = this.pathFinder.fastest(army.index, game.BASE)
+          return new Move(next.index, game.BASE, (new Date().getTime() - this.started))
+        }
       } 
 
       let generals = game.generals.slice(0) // Copy the array
@@ -151,22 +158,18 @@ export default class Curly implements bot {
       }
 
 
-      // Attack Enamy
+      // Attack Enamy or expand
       let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase);
-      if(enemies.length > 0){
-        let nearestToBase = enemies[0]
-        // let move =  this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
-        let min = Math.floor(largest.armies / 4)
-        let move = this.gatherAndMoveLargest(2, (min > 1 ? min : 2))
-        return move ? 
-                  move : 
-                  this.moveLargestArmyTo(game.BASE);
-      }
-
-
-      // Keep expanding if no enemies found
-      let toEmpty = this.pathFinder.expand(true, 2, this.pathFinder.nearestToEmpty);
-      return toEmpty // Not sure what else to do if no empty and no enemy around...
+     
+      let nearestToBase = enemies.length ?
+                          enemies[0] :
+                          this.pathFinder.getNearest(largest.index, game.TILE.EMPTY)
+      // let move =  this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
+      let min = Math.floor(largest.armies / 4)
+      let move = this.gatherAndMoveLargest(2, (min > 1 ? min : 2), nearestToBase.index)
+      return move ? 
+                move : 
+                this.moveLargestArmyTo(game.BASE);
   }
 
 }

@@ -23,7 +23,7 @@ process.on('message', (gameData: {game: Game, update: any}) => {
   try{
       move = theBot.update(gameData.game, gameData.update)
   } catch (err) {
-      console.log(`Bot Error :  ${err}`);
+      console.log(`Bot Error :`, err);
   } finally {
       process.send(move)
   }
