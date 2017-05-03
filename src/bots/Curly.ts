@@ -5,17 +5,8 @@ import { PathFinder } from '../PathFinder'
 
 export default class Curly implements bot {
 
-  // How close is too close
-  private intruderRange = 2;
-  // minimum lands before we expand no further
-  private minLands = 50; // update later
-  // minimun ours to their ratio (exand more if we are below a ratio)
-  private minLandRatio = 1.5;
-
-  // index of our attacking front (vanguard)
-  private vanguard:{index:number, armies:number, deploying: boolean} = {index:-1, armies: 0, deploying: false};
-  // How far out is the vanguard before we pull it back
-  private varguardHelpDistance = 10;
+  // gather amy if its a percentage of the largest
+  private minStrengthGather = .2
 
   private pathFinder: PathFinder;
   private maxStrength: number;
@@ -112,10 +103,6 @@ export default class Curly implements bot {
         }
       } 
 
-      let generals = game.generals.slice(0) // Copy the array
-      generals.splice(game.playerIndex,1) // remove us from it
-      generals = generals.filter(c => c > -1)
-
       // get desperate and pull from base if they have lots more land
       if((this.landRatio() < .75) && (this.game.armies[this.game.BASE] > 100)){
         let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1).length
@@ -128,11 +115,14 @@ export default class Curly implements bot {
       // Largest Army
       let largest = this.pathFinder.getArmiesWithMinSize(this.game.TILE.MINE, 1, false, this.pathFinder.largestFirst)[0];
 
+      let generals = game.generals.slice(0) // Copy the array
+      generals.splice(game.playerIndex,1) // remove us from it
+      generals = generals.filter(c => c > -1)
 
       // Attack General if location is known
       if(generals.length){ 
         // let move =  this.moveLargestArmyTo(generals[0]);
-        let min = Math.floor(largest.armies / 5)
+        let min = Math.floor(largest.armies * this.minStrengthGather)
         let move = this.gatherAndMoveLargest(5, (min > 1 ? min : 2), generals[0])
         return move ? move :
                       this.moveLargestArmyTo(game.BASE);
@@ -159,14 +149,17 @@ export default class Curly implements bot {
 
 
       // Attack Enamy or expand
-      let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase);
+      // let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase);
+      let enemy = this.pathFinder.getNearest(largest.index, game.TILE.ANY_ENEMY)
      
-      let nearestToBase = enemies.length ?
-                          enemies[0] :
-                          this.pathFinder.getNearest(largest.index, game.TILE.EMPTY)
+      let nearest = enemy ?
+                      enemy :
+                      this.pathFinder.getNearest(largest.index, game.TILE.EMPTY)
       // let move =  this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
-      let min = Math.floor(largest.armies / 4)
-      let move = this.gatherAndMoveLargest(2, (min > 1 ? min : 2), nearestToBase.index)
+
+
+      let min = Math.floor(largest.armies * this.minStrengthGather)
+      let move = this.gatherAndMoveLargest(3, (min > 1 ? min : 2), nearest.index)
       return move ? 
                 move : 
                 this.moveLargestArmyTo(game.BASE);
