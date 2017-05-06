@@ -127,10 +127,25 @@ export default class Curly implements bot {
         return move ? move :
                       this.moveLargestArmyTo(game.BASE);
       }
-      
 
-      // Expand
-      let maxDist = 1; // Need to test ballance on this (maybe 2 early game....)
+
+      // Immediate expand (immediate surrounding empty tiles)
+      const emptyTiles = this.pathFinder.getArmiesWithMinSize(game.TILE.EMPTY, 0)
+
+      for(const emptyTile of emptyTiles){
+        const surrounding = this.pathFinder.getSurroundingIndexes(emptyTile.index)
+        for(const index of surrounding){
+          if(game.terrain[index] === game.TILE.MINE &&
+             game.armies[index] == 2 && // just those newly enforced
+             !this.pathFinder.isCity(emptyTile.index))
+          {
+            return new Move(index, emptyTile.index, (new Date().getTime() - this.started));
+          }
+        }
+      }
+
+      /* Older immediate expand implementation (too expensive, casues missed turns)
+      const maxDist = 1; // Need to test ballance on this (maybe 2 early game....)
       let closeToEmpty = this.pathFinder.getArmiesWithMinSize(game.TILE.MINE,2)
                                         .map(a => {
                                           return {
@@ -146,20 +161,36 @@ export default class Curly implements bot {
         let next = this.pathFinder.fastest(army.index, army.nearest.index)
         return new Move(army.index, next.index, (new Date().getTime() - this.started));
       }
+      */
 
+      // Take nearest city is strong enough
+      if(largest.armies > 50 && (this.landRatio() > 1.2)){ // Other stipulations -- like max strength or not panic or somethiang
+        let cityFinder = new PathFinder(game, true);
+        const nearestCity = game.cities
+                                .map(i => ({
+                                  index: i,
+                                  strength: game.armies[i],
+                                  capture: game.terrain[i],
+                                  distance: cityFinder.distanceTo(largest.index, i)
+                                }))
+                                .filter(c => c.capture !== game.TILE.MINE)
+                                .sort((a,b) => a.distance - b.distance)[0]
+      
+        if(largest.armies > nearestCity.strength){
+          const fastest = cityFinder.fastest(largest.index, nearestCity.index)
+          return new Move(largest.index, fastest.index, (new Date().getTime() - this.started))
+        }
+      }
 
       // Attack Enamy or expand
-      // let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase);
-      let enemy = this.pathFinder.getNearest(largest.index, game.TILE.ANY_ENEMY)
-     
-      let nearest = enemy ?
+      // let enemies = this.pathFinder.getArmiesWithMinSize(this.game.TILE.ANY_ENEMY, 1, false, this.pathFinder.nearestToBase);     
+      const enemy = this.pathFinder.getNearest(largest.index, game.TILE.ANY_ENEMY)
+      const nearest = enemy ?
                       enemy :
                       this.pathFinder.getNearest(largest.index, game.TILE.EMPTY)
-      // let move =  this.pathFinder.expand(false, 2, this.pathFinder.largestFirst, null, true);
 
-
-      let min = Math.floor(largest.armies * this.minStrengthGather)
-      let move = this.gatherAndMoveLargest(3, (min > 1 ? min : 2), nearest.index)
+      const min = Math.floor(largest.armies * this.minStrengthGather)
+      const move = this.gatherAndMoveLargest(2, (min > 1 ? min : 2), nearest.index)
       return move ? 
                 move : 
                 this.moveLargestArmyTo(game.BASE);
