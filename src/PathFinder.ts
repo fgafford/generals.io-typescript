@@ -85,7 +85,7 @@ export class PathFinder {
         if(!this.paths[to]){ this.buildPath(to) }
         let path = this.paths[to];
 
-        let moves = this.getSurroundingIndexes(from, this.game)
+        let moves = this.getSurroundingIndexes(from)
                             .map(i => ({ index: i, distance: path[i]}))
                             .filter(i => !isNaN(i.distance))
 
@@ -141,7 +141,7 @@ export class PathFinder {
             if(!indexesAtCount.length) break;
             // itterate over spaces that need distance set
             for(let i = 0; i < indexesAtCount.length; i++){
-                let ins = this.getSurroundingIndexes(indexesAtCount[i], this.game);
+                let ins = this.getSurroundingIndexes(indexesAtCount[i]);
 
                 // itterate over sourrounding spaces (the ones that need updated)
                 for(let j = 0; j < ins.length; j++){
@@ -223,15 +223,19 @@ export class PathFinder {
      * @param from - the index to get surrounding indexes for
      * @param game - the current game object
      */
-    public getSurroundingIndexes(from: number, game: Game): Array<number>{
+    public getSurroundingIndexes(from: number): Array<number>{
         let indexes: Array<number> = [];
 
-        if(from - game.width > -1){indexes.push(from - game.width)} // up
-        if(from + game.width < game.terrain.length){indexes.push(from + game.width)} // down
-        if(from % game.width > 0 ){indexes.push(from - 1)} // left
-        if(from % game.width < game.width - 1){indexes.push(from + 1)} // right
+        if(from - this.game.width > -1){indexes.push(from - this.game.width)} // up
+        if(from + this.game.width < this.game.terrain.length){indexes.push(from + this.game.width)} // down
+        if(from % this.game.width > 0 ){indexes.push(from - 1)} // left
+        if(from % this.game.width < this.game.width - 1){indexes.push(from + 1)} // right
 
         return indexes;
+    }
+
+    public isCity(index: number): boolean {
+        return this.game.cities.indexOf(index) > -1;
     }
 
     /**
