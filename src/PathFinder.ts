@@ -147,15 +147,20 @@ export class PathFinder {
                 for(let j = 0; j < ins.length; j++){
                     // ins[j] = space to get new count (count+1)
                     let index = ins[j];
-                    if(path[index] === undefined && 
-                       this.terrain[index] !== this.game.TILE.OBSTACLE && 
-                       this.terrain[index] !== this.game.TILE.MOUNTAIN && 
+                    if((path[index] === undefined) && 
+                       (this.terrain[index] !== this.game.TILE.OBSTACLE) && 
+                       (this.terrain[index] !== this.game.TILE.MOUNTAIN) && 
                        // include cities if requested
-                       (this.includeCities ? true : !~this.game.cities.indexOf(index)) && 
+                    //    (this.includeCities ? true : !this.isCity(index)) && 
+                    //    (this.includeCities ? true : 
+                       (!this.isCity(index) ? true :
+                            (this.includeCities ? true : 
+                                this.game.terrain[index] === this.game.TILE.MINE)) &&
+                    //    && this.includeCities ? true : (this.game.terrain[index] === this.game.TILE.MINE)) && 
                        // if index is BASE and isBasePath then add
                        (index === this.game.BASE ? isBasePath : true))
                     {
-                        path[ins[j]] = count + 1;
+                        path[index] = count + 1;
                     }
                 } 
             }
