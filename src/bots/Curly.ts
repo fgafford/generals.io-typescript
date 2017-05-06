@@ -164,6 +164,7 @@ export default class Curly implements bot {
       */
 
       // Take nearest city is strong enough
+      /*
       if(largest.armies > 50 && (this.landRatio() > 1.2)){ // Other stipulations -- like max strength or not panic or somethiang
         let cityFinder = new PathFinder(game, true);
         const nearestCity = game.cities
@@ -179,6 +180,18 @@ export default class Curly implements bot {
         if(largest.armies > nearestCity.strength){
           const fastest = cityFinder.fastest(largest.index, nearestCity.index)
           return new Move(largest.index, fastest.index, (new Date().getTime() - this.started))
+        }
+      }
+      */
+
+      // Take cities we come across and are able to capture
+      const surrounding = this.pathFinder.getSurroundingIndexes(largest.index)
+      for(const index of surrounding){
+        if(this.pathFinder.isCity(index) &&
+          (game.terrain[index] !== game.TILE.MINE) &&
+          (game.armies[index] < (largest.armies + 2)))
+        {
+          return new Move(largest.index, index, (new Date().getTime() - this.started))
         }
       }
 
