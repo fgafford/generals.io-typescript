@@ -39,20 +39,10 @@ Curly is a stateless, moderatly conservative bot that take easy avaliable lands 
 Larry is a statefull, highly conservative bot that determins attack and on base defence based on total enemy strength potential.
   
   
+### Run Test  
+To run tests:   
+> $ gulp test
   
   
-### Installation
-
-Requires NodeJS 7.x, PM2, and gulp to run.
-
-Clone: 
-> $ git clone https://github.com/fgafford/generals.io-typescript.git
-> $cd generals.io-typescript 
-> $ npm install
-
-Configuration: 
-The bots run using a PM2 configuration. A demo configuration can be found [here](https://github.com/fgafford/generals.io-typescript/blob/master/config/demoConfig.json). user_id and username can be stored in this configuaration and kept out of version control.
-
-Start bot: 
-> $ pm2 start ./config/myBot.json
-
+### Technologies
+Requires NodeJS 7.x, PM2, and gulp. 
